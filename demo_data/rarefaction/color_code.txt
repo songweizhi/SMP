@@ -1,0 +1,3 @@
+GroupID	GroupColor
+Sponge	orange
+Coral	lightgreen
