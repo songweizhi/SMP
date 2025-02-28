@@ -12,10 +12,11 @@ option_list = list(
   make_option(c("-o", "--out"),   type="character", default=NULL, help="output plot"));
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
-input_table_txt    = opt$otu
+input_table_txt    = opt$in
+output_plot        = opt$out
 
-input_table_txt = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_group.txt'
-output_plot     = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_group.pdf'
+# input_table_txt = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_group.txt'
+# output_plot     = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_group.pdf'
 
 #input_table_txt = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_Dive.txt'
 #output_plot     = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_Dive.pdf'

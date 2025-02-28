@@ -164,7 +164,7 @@ def among_host_species_variability(otu_table_txt, metadata_txt, tax_rank, color_
 # file in
 otu_table_txt           = '/Users/songweizhi/Desktop/SMP/00_fa_files_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table.txt'
 sample_metadata_txt     = '/Users/songweizhi/Desktop/metadata.txt'
-taxon_rank              = 'f'
+host_taxon_rank         = 'f'
 color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/01_metadata/color_code_sample_type.txt'
 interested_sample_txt   = None
 interested_group_txt    = '/Users/songweizhi/Desktop/SMP/01_metadata/samples_Sponge_Water_Sediment.txt'
@@ -175,5 +175,5 @@ op_dir                  = '/Users/songweizhi/Desktop/among_host_species_variabil
 
 ########################################################################################################################
 
-among_host_species_variability(otu_table_txt, sample_metadata_txt, taxon_rank, color_code_sample_txt, interested_sample_txt, interested_group_txt, op_dir, default_color)
+among_host_species_variability(otu_table_txt, sample_metadata_txt, host_taxon_rank, color_code_sample_txt, interested_sample_txt, interested_group_txt, op_dir, default_color)
 

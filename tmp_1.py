@@ -1,55 +1,37 @@
+from Bio import SeqIO
 
-def rarefaction(otu_table_txt, sample_group_txt, group_color_txt, output_plot):
 
-    pwd_current_file    = os.path.realpath(__file__)
-    current_file_path   = '/'.join(pwd_current_file.split('/')[:-1])
-    rarefaction_R       = '%s/rarefaction_R' % current_file_path
-    if os.path.isfile(rarefaction_R) is False:
-        print('rarefaction.R not found, program exited!')
-        exit()
+otu_classification_txt      = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.gtdb.2.txt'
+otu_classification_txt      = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.silva.2.txt'
+otu_seq_file                = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s06_AllSamples_unoise_nc.fasta'
+otu_seq_file_unclassified   = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s06_AllSamples_unoise_nc_unclassified.fasta'
 
-    # define file name
-    grouping_txt    = '%s/grouping.txt'     % op_dir
-    group_color_txt = '%s/color.txt'        % op_dir
-    output_plot     = '%s/rarefaction.pdf'  % op_dir
 
-    sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
+total_num = 0
+unclassified_num = 0
+unclassified_otu_set = set()
+for otu in open(otu_classification_txt):
+    otu_split = otu.strip().split('\t')
+    otu_id    = otu_split[0]
+    otu_tax   = otu_split[1]
+    if otu_tax == 'Unclassified':
+        unclassified_num += 1
+        unclassified_otu_set.add(otu_id)
+    total_num += 1
 
-    metadata_dict = dict()
-    for sample in open(metadata_txt):
-        sample_split = sample.strip().split('\t')
-        sample_id = sample_split[0]
-        sample_grp = sample_split[1]
-        metadata_dict[sample_id] = sample_grp
+print(total_num)
+print(unclassified_num)
+print(unclassified_num*100/total_num)
 
-    sample_group_txt_handle = open(grouping_txt, 'w')
-    sample_group_txt_handle.write('SampleID\tSampleGroup\n')
-    group_set = set()
-    for sample in sorted(sample_list):
-        sample_grp = metadata_dict.get(sample, 'na')
-        sample_group_txt_handle.write('%s\t%s\n' % (sample, sample_grp))
-        group_set.add(sample_grp)
-    sample_group_txt_handle.close()
+print(len(unclassified_otu_set))
+print(unclassified_otu_set)
 
-    color_code_dict = dict()
-    for each_sample_type in open(color_code_txt):
-        sample_type_split = each_sample_type.strip().split('\t')
-        sample_type = sample_type_split[0]
-        sample_color = sample_type_split[1]
-        color_code_dict[sample_type] = sample_color
 
-    group_color_txt_handle = open(group_color_txt, 'w')
-    group_color_txt_handle.write('GroupID\tGroupColor\n')
-    for grp in sorted(list(group_set)):
-        grp_color = color_code_dict[grp]
-        group_color_txt_handle.write('%s\t%s\n' % (grp, grp_color))
-    group_color_txt_handle.close()
-
-    rarefaction_cmd = 'Rscript %s -i %s -g %s -c %s -o %s' % \
-    (rarefaction_R, otu_table_txt, grouping_txt, group_color_txt, output_plot)
-    print(rarefaction_cmd)
-    os.system(rarefaction_cmd)
-
-    print('Done')
+otu_seq_file_unclassified_handle = open(otu_seq_file_unclassified, 'w')
+for each_seq in SeqIO.parse(otu_seq_file, 'fasta'):
+    if each_seq.id in unclassified_otu_set:
+        otu_seq_file_unclassified_handle.write('>%s\n' % each_seq.id)
+        otu_seq_file_unclassified_handle.write('%s\n' % each_seq.seq)
+otu_seq_file_unclassified_handle.close()
 
 
