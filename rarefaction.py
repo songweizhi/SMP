@@ -49,7 +49,7 @@ def subset_df(file_in, file_out, cols_to_keep_set):
     subset_df.to_csv(file_out, sep=sep_symbol)
 
 
-def rarefaction(otu_table_txt, sample_source_txt, color_code_txt, interested_sample_txt, interested_group_txt, op_dir):
+def rarefaction(otu_table_txt, metadata_txt, color_code_txt, interested_sample_txt, interested_group_txt, default_color, op_prefix, op_dir):
 
     # get path to rarefaction_R
     pwd_current_file  = os.path.realpath(__file__)
@@ -60,20 +60,26 @@ def rarefaction(otu_table_txt, sample_source_txt, color_code_txt, interested_sam
         exit()
 
     # define file name
-    otu_table_subset    = '%s/otu_table_subset.txt' % op_dir
-    grouping_txt        = '%s/grouping.txt'         % op_dir
-    group_color_txt     = '%s/color.txt'            % op_dir
-    output_plot         = '%s/rarefaction.pdf'      % op_dir
+    otu_table_subset    = '%s/%s_otu_table_subset.txt' % (op_dir, op_prefix)
+    grouping_txt        = '%s/%s_grouping.txt'         % (op_dir, op_prefix)
+    group_color_txt     = '%s/%s_color.txt'            % (op_dir, op_prefix)
+    output_plot         = '%s/%s_rarefaction.pdf'      % (op_dir, op_prefix)
 
     otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
 
     # read in sample_source_txt
     sample_source_dict = dict()
-    for sample in open(sample_source_txt):
-        sample_split = sample.strip().split('\t')
-        sample_id = sample_split[0]
-        sample_source = sample_split[1]
-        sample_source_dict[sample_id] = sample_source
+    col_index = dict()
+    line_num_index = 0
+    for each_line in open(metadata_txt):
+        line_num_index += 1
+        line_split = each_line.strip().split('\t')
+        if line_num_index == 1:
+            col_index = {key: i for i, key in enumerate(line_split)}
+        else:
+            sample_id = line_split[col_index['Sample_id']]
+            sample_source = line_split[col_index['Source']]
+            sample_source_dict[sample_id] = sample_source
 
     # get interested_sample_set
     interested_sample_set = set()
@@ -96,10 +102,10 @@ def rarefaction(otu_table_txt, sample_source_txt, color_code_txt, interested_sam
     shared_sample_set, uniq_to_otu_table, uniq_to_interested = get_shared_uniq_elements(otu_table_sample_list, interested_sample_set)
 
     if len(uniq_to_otu_table) > 0:
-        print('Samples uniq to %s:' % otu_table_txt)
+        print('Samples uniq to %s:' % otu_table_txt.split('/')[-1])
         print(','.join(sorted(list(uniq_to_otu_table))))
     if len(uniq_to_interested) > 0:
-        print('Samples uniq to %s:' % sample_source_txt)
+        print('Samples uniq to %s:' % metadata_txt.split('/')[-1])
         print(','.join(sorted(list(uniq_to_interested))))
 
     # subset OTU table
@@ -127,7 +133,7 @@ def rarefaction(otu_table_txt, sample_source_txt, color_code_txt, interested_sam
     group_color_txt_handle = open(group_color_txt, 'w')
     group_color_txt_handle.write('GroupID\tGroupColor\n')
     for grp in sorted(list(group_set)):
-        grp_color = color_code_dict[grp]
+        grp_color = color_code_dict.get(grp, default_color)
         group_color_txt_handle.write('%s\t%s\n' % (grp, grp_color))
     group_color_txt_handle.close()
 
@@ -141,16 +147,21 @@ def rarefaction(otu_table_txt, sample_source_txt, color_code_txt, interested_sam
 ########################################################################################################################
 
 # file in
-otu_table_txt           = '/Users/songweizhi/Desktop/SMP/00_fa_files_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table.txt'
-sample_source_txt       = '/Users/songweizhi/Desktop/SMP/01_metadata/sample_source.txt'
-color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/01_metadata/color_code_sample_type.txt'
-interested_sample_txt   = None
-interested_group_txt    = '/Users/songweizhi/Desktop/SMP/01_metadata/samples_Coral_Water_Sediment.txt'
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_NonEU.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250228.txt'
+color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type.txt'
+interested_sample_txt    = None
+default_color           = '#999999'
+
+interested_group_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Sponge_Water_Sediment.txt'
+op_prefix               = 'Sponge_Water_Sediment'
+
+interested_group_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Coral_Water_Sediment.txt'
+op_prefix               = 'Coral_Water_Sediment'
 
 # file out
-op_dir                  = '/Users/songweizhi/Desktop/Rarefaction_Coral_Water_Sediment'
+op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_1_Rarefaction'
 
 ########################################################################################################################
 
-rarefaction(otu_table_txt, sample_source_txt, color_code_sample_txt, interested_sample_txt, interested_group_txt, op_dir)
-
+rarefaction(otu_table_txt, sample_metadata_txt, color_code_sample_txt, interested_sample_txt, interested_group_txt, default_color, op_prefix, op_dir)
