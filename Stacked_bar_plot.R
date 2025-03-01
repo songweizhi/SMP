@@ -17,7 +17,9 @@ output_plot = opt$pdf_out
 
 df = read.csv(input_table, sep='\t', header = T)
 
-pdf(output_plot, width =9,  height =36)
+sample_num = length(unique(df$Sample))
+plot_height = sample_num*0.25
+pdf(output_plot, width =12,  height =plot_height)
 
 ggplot(df, aes(x = Sample, y = Abundance, fill = Taxa)) + 
   geom_bar(stat = "identity", position = 'stack') +

@@ -1,9 +1,5 @@
 import os
 import pandas as pd
-import seaborn as sns
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
 
 
 def get_shared_uniq_elements(list_1, list_2):
@@ -53,7 +49,7 @@ def subset_df(file_in, file_out, cols_to_keep_set):
     subset_df.to_csv(file_out, sep=sep_symbol)
 
 
-def community_composition(metadata_txt, host_tax_rank, interested_group_txt, otu_table_txt, classification_txt, otu_tax_rank, op_dir, op_prefix):
+def community_composition(metadata_txt, host_tax_rank, interested_group_txt, interested_sample_txt, otu_table_txt, classification_txt, otu_tax_rank, op_dir, op_prefix):
 
     # get path to rarefaction_R
     pwd_current_file  = os.path.realpath(__file__)
@@ -68,14 +64,45 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, otu
     otu_table_subset            = '%s/%s_otu_table_subset.txt'                  % (op_dir, op_prefix)
     tax_table_txt               = '%s/%s_taxa_table.txt'                        % (op_dir, op_prefix)
     tax_table_txt_for_ggplot    = '%s/%s_taxa_table_ggplot.txt'                 % (op_dir, op_prefix)
-    output_plot_1               = '%s/%s_community_composition_heatmap.pdf'     % (op_dir, op_prefix)
     output_plot_2               = '%s/%s_community_composition_stacked_bar.pdf' % (op_dir, op_prefix)
 
-    ################################################ subsample OTU table ###############################################
+    ################################################ get interested_sample_set  ###############################################
 
-    interested_source_set = set()
-    for each_grp in open(interested_group_txt):
-        interested_source_set.add(each_grp.strip())
+    otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
+
+    # read in sample_source_txt
+    sample_source_dict = dict()
+    col_index = dict()
+    line_num_index = 0
+    for each_line in open(metadata_txt):
+        line_num_index += 1
+        line_split = each_line.strip().split('\t')
+        if line_num_index == 1:
+            col_index = {key: i for i, key in enumerate(line_split)}
+        else:
+            sample_id = line_split[col_index['Sample_id']]
+            sample_source = line_split[col_index['Source']]
+            sample_source_dict[sample_id] = sample_source
+
+    # get interested_sample_set
+    interested_sample_set = set()
+    if (interested_sample_txt is None) and (interested_group_txt is None):
+        interested_sample_set = otu_table_sample_list
+    elif (interested_sample_txt is not None) and (interested_group_txt is None):
+        for each_sample in open(interested_sample_txt):
+            interested_sample_set.add(each_sample.strip())
+    elif (interested_sample_txt is None) and (interested_group_txt is not None):
+
+        interested_group_set = set()
+        for each_grp in open(interested_group_txt):
+            interested_group_set.add(each_grp.strip())
+
+        for each_sample in sample_source_dict:
+            sample_source = sample_source_dict[each_sample]
+            if sample_source in interested_group_set:
+                interested_sample_set.add(each_sample)
+
+    ################################################ subsample OTU table ###############################################
 
     # read in metadata_txt
     sample_group_dict = dict()
@@ -90,7 +117,7 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, otu
             sample_id            = line_split[col_index['Sample_id']]
             sample_source        = line_split[col_index['Source']]
             sample_host_taxon    = line_split[col_index['Host_taxonomy']]
-            if sample_source in interested_source_set:
+            if sample_id in interested_sample_set:
 
                 if sample_host_taxon == 'na':
                     sample_group_dict[sample_id] = sample_source
@@ -105,7 +132,6 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, otu
                     sample_group_dict[sample_id] = group_str
 
     # get shared and uniq samples
-    otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
     shared_sample_set, uniq_to_otu_table, uniq_to_interested = get_shared_uniq_elements(otu_table_sample_list, sample_group_dict.keys())
 
     if len(uniq_to_otu_table) > 0:
@@ -146,15 +172,6 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, otu
     tax_table_df_normalized_rounded.to_csv(tax_table_txt, sep='\t', header=True, index=False)
     tax_table_df_normalized_rounded.set_index('Taxon', inplace=True)
 
-    #################### get heatmap ####################
-
-    # plt.figure(figsize=(60, 20))
-    # sns.heatmap(tax_table_df_normalized_rounded, annot=True, cmap='coolwarm', fmt='.1f', linewidths=0.5)
-    # plt.title("Heatmap of DataFrame")
-    # plt.tight_layout()
-    # plt.savefig(output_plot_1, bbox_inches='tight', dpi=300)
-    # plt.close()
-
     #################### get stacked bar plot ####################
 
     tax_table_txt_for_ggplot_handle = open(tax_table_txt_for_ggplot, 'w')
@@ -189,11 +206,21 @@ group_host_at_rank          = 'g'  # None
 otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU.txt'
 classification_txt          = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.gtdb.2.txt'
 otu_tax_rank                = 'd'
-interested_sample_group_txt = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition/sample_All_17.txt'
+interested_group_txt        = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition/sample_All_17.txt'
 op_prefix                   = 'All_17_GTDB'
+
+interested_group_txt        = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Coral_Water_Sediment.txt'
+op_prefix                   = 'Coral_Water_Sediment_GTDB'
+
+interested_group_txt        = '/Users/songweizhi/Desktop/SMP/00_metadata/samples_Coral.txt'
+op_prefix                   = 'Coral_GTDB'
+
+interested_sample_txt       = '/Users/songweizhi/Desktop/SMP/sample_Corals_with_abundant_archaea.txt'
+interested_group_txt        = None
+op_prefix                   = 'sample_coral_with_abundant_archaea_GTDB'
 
 op_dir                      = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition'
 
 ########################################################################################################################
 
-community_composition(sample_metadata_txt, group_host_at_rank, interested_sample_group_txt, otu_table_txt, classification_txt, otu_tax_rank, op_dir, op_prefix)
+community_composition(sample_metadata_txt, group_host_at_rank, interested_group_txt, interested_sample_txt, otu_table_txt, classification_txt, otu_tax_rank, op_dir, op_prefix)
