@@ -28,11 +28,6 @@ sample_group_txt = opt$group
 color_code_txt   = opt$color
 output_plot      = opt$out
 
-#otu_table_txt    = '/Users/songweizhi/PycharmProjects/SpongeMicrobiomeProject/demo_data/rarefaction/otu_table.txt'
-#sample_group_txt = '/Users/songweizhi/PycharmProjects/SpongeMicrobiomeProject/demo_data/rarefaction/sample_group.txt'
-#color_code_txt   = '/Users/songweizhi/PycharmProjects/SpongeMicrobiomeProject/demo_data/rarefaction/color_code.txt'
-#output_plot      = '/Users/songweizhi/PycharmProjects/SpongeMicrobiomeProject/demo_data/rarefaction/demo.pdf'
-
 ################################################################################
 
 # data preparation, OTU as rows

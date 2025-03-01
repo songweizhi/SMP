@@ -31,9 +31,3 @@ boxplot(mod,
         ylab = '', # Sponge species (environments) 
         las=1,  # control direction of group label
         horizontal=TRUE)
-
-?boxplot
-
-
-
-

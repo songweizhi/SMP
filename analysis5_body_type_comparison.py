@@ -209,7 +209,7 @@ interested_sample_group_txt = '/Users/songweizhi/Desktop/SMP/Analysis_4_Communit
 interested_sample_group_txt = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition/samples_Sponge.txt'
 op_dir                      = '/Users/songweizhi/Desktop/SMP/Analysis_5_Body_type'
 op_prefix                   = 'Sponge'
-otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_NonEU.txt'
+otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU.txt'
 classification_txt          = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.gtdb.2.txt'
 otu_tax_rank                = 'd'
 

@@ -57,13 +57,13 @@ def subset_df(file_in, file_out, cols_to_keep_set):
     subset_df.to_csv(file_out, sep=sep_symbol)
 
 
-def nmds(otu_table_txt, metadata_txt, tax_rank, interested_group_txt, op_dir):
+def nmds(otu_table_txt, metadata_txt, host_taxon_rank, interested_group_txt, op_dir, op_prefix):
 
     # define file name
-    otu_table_subset        = '%s/otu_table_subset.txt'                 % op_dir
-    otu_table_subset_t      = '%s/otu_table_subset_T.txt'               % op_dir
-    otu_table_subset_t_meta = '%s/otu_table_subset_T_with_group.txt'    % op_dir
-    output_plot             = '%s/nmds.pdf'                             % op_dir
+    otu_table_subset        = '%s/%s_otu_table_subset.txt'                 % (op_dir, op_prefix)
+    otu_table_subset_t      = '%s/%s_otu_table_subset_T.txt'               % (op_dir, op_prefix)
+    otu_table_subset_t_meta = '%s/%s_otu_table_subset_T_with_group.txt'    % (op_dir, op_prefix)
+    output_plot             = '%s/%s_nmds.pdf'                             % (op_dir, op_prefix)
 
     # get path to rarefaction_R
     pwd_current_file  = os.path.realpath(__file__)
@@ -97,9 +97,9 @@ def nmds(otu_table_txt, metadata_txt, tax_rank, interested_group_txt, op_dir):
                 elif sample_source == 'Sediment':
                     sample_group_dict[sample_id] = 'Sediment'
                 else:
-                    needed_tax = '%s__' % tax_rank
+                    needed_tax = '%s__' % host_taxon_rank
                     for each_rank in sample_host_tax_split:
-                        if each_rank.startswith(tax_rank):
+                        if each_rank.startswith(host_taxon_rank):
                             needed_tax = each_rank
                     sample_group_dict[sample_id] = needed_tax
 
@@ -120,21 +120,19 @@ def nmds(otu_table_txt, metadata_txt, tax_rank, interested_group_txt, op_dir):
     sample_without_tax = set()
     for sample in shared_sample_set:
         sample_group = sample_group_dict[sample]
-        if sample_group == ('%s__' % tax_rank):
+        if sample_group == ('%s__' % host_taxon_rank):
             sample_without_tax.add(sample)
         else:
             sample_with_grp_info.add(sample)
 
     if len(sample_without_tax) > 0:
-        print('Samples with unknown classification at %s level:' % tax_rank)
+        print('Samples with unknown classification at %s level:' % host_taxon_rank)
         print(','.join(sorted(list(sample_without_tax))))
         print()
 
     # subset OTU table
-    otu_table_to_plot = otu_table_txt
     if len(sample_with_grp_info) < len(otu_table_sample_list):
         subset_df(otu_table_txt, otu_table_subset, sample_with_grp_info)
-        otu_table_to_plot = otu_table_subset
 
     # transpose otu table
     transpose_csv(otu_table_subset, otu_table_subset_t, '\t', 0, 0)
@@ -152,11 +150,10 @@ def nmds(otu_table_txt, metadata_txt, tax_rank, interested_group_txt, op_dir):
             otu_table_subset_t_meta_handle.write('\t'.join(line_split) + '\n')
 
         line_index += 1
-
     otu_table_subset_t_meta_handle.close()
 
     # run R script
-    nmds_cmd = 'Rscript %s -i %s -o %s' % (nmds_R, otu_table_to_plot, output_plot)
+    nmds_cmd = 'Rscript %s -i %s -o %s' % (nmds_R, otu_table_subset_t_meta, output_plot)
     print(nmds_cmd)
     os.system(nmds_cmd)
 
@@ -166,14 +163,20 @@ def nmds(otu_table_txt, metadata_txt, tax_rank, interested_group_txt, op_dir):
 ########################################################################################################################
 
 # file in
-otu_table_txt           = '/Users/songweizhi/Desktop/NMDS/s07_AllSamples_unoise_otu_table.txt'
-sample_metadata_txt     = '/Users/songweizhi/Desktop/NMDS/metadata.txt'
-interested_group_txt    = '/Users/songweizhi/Desktop/NMDS/samples_Sponge_Water_Sediment.txt'
-taxon_rank              = 'f'
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250228.txt'
+host_taxon_rank         = 'f'
+
+interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Sponge_Water_Sediment.txt'
+op_prefix               = 'Sponge_Water_Sediment'
+
+interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Coral_Water_Sediment.txt'
+op_prefix               = 'Coral_Water_Sediment'
 
 # file out
-op_dir                  = '/Users/songweizhi/Desktop/NMDS'
+op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
 
 ########################################################################################################################
 
-nmds(otu_table_txt, sample_metadata_txt, taxon_rank, interested_group_txt, op_dir)
+nmds(otu_table_txt, sample_metadata_txt, host_taxon_rank, interested_group_txt, op_dir, op_prefix)
+

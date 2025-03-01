@@ -8,25 +8,20 @@ suppressMessages(suppressWarnings(library(optparse)))
 ################################################################################
 
 option_list = list(
-  make_option(c("-i", "--in"),   type="character", default=NULL, help="otu table"),
-  make_option(c("-o", "--out"),   type="character", default=NULL, help="output plot"));
+  make_option(c("-i", "--file_in"),   type="character", default=NULL, help="otu table"),
+  make_option(c("-o", "--file_out"),  type="character", default=NULL, help="output plot"));
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
-input_table_txt    = opt$in
-output_plot        = opt$out
+input_table_txt    = opt$file_in
+output_plot        = opt$file_out
 
-# input_table_txt = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_group.txt'
-# output_plot     = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_group.pdf'
-
-#input_table_txt = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_Dive.txt'
-#output_plot     = '/Users/songweizhi/Desktop/nmds/otu_table_subset_T_with_Dive.pdf'
+# input_table_txt    = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS/Sponge_Water_Sediment_otu_table_subset_T_with_group.txt'
+# output_plot        = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS/Sponge_Water_Sediment_nmds.pdf'
 
 ################################################################################
 
 df_in <- read.csv(file = input_table_txt, sep = '\t', header = TRUE)
-
-otu_count <- df_in[3:ncol(df_in)]
-
+otu_count <- df_in[3:(ncol(df_in))]
 otu_count.mds <- metaMDS(comm = otu_count, distance = "bray", trace = FALSE, autotransform = FALSE)
 
 MDS_xy <- data.frame(otu_count.mds$points)
@@ -35,8 +30,15 @@ MDS_xy$Group <- df_in$Group
 # get stress_value
 stress_value = round(otu_count.mds$stress, digits=3)
 
+
+shape_uniq = unique(df_in$Group)
+shape_uniq
+
+shape_group = rep(1:3, length.out = length(df_in$Group))
+shape_group
+
 p = ggplot(MDS_xy, aes(MDS1, MDS2, color = Group)) +
-  annotate("text", x = max(MDS_xy$MDS1), y = min(MDS_xy$MDS1) - 0.5, label = paste("Stress: ", stress_value), hjust = 1, vjust = 0, size = 5, color = "black") +  
+  annotate("text", x = max(MDS_xy$MDS1), y = min(MDS_xy$MDS2), label = paste("Stress: ", stress_value), hjust = 1, vjust = 0, size = 5, color = "black") +  
   geom_point() +
   theme_bw() + 
   theme(
@@ -54,3 +56,4 @@ p = ggplot(MDS_xy, aes(MDS1, MDS2, color = Group)) +
   )
 
 ggsave(filename=output_plot, plot = p, device = cairo_pdf, width =250, height =200, units = "mm")
+  

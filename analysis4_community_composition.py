@@ -186,7 +186,7 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, otu
 # file in
 sample_metadata_txt         = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250228.txt'
 group_host_at_rank          = 'g'  # None
-otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_NonEU.txt'
+otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU.txt'
 classification_txt          = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.gtdb.2.txt'
 otu_tax_rank                = 'd'
 interested_sample_group_txt = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition/sample_All_17.txt'

@@ -5,7 +5,7 @@ import os
 blast_op_txt    = '/Users/songweizhi/Desktop/unclassified_against_nt_best_hit.txt'
 op_dir          = '/Users/songweizhi/Desktop/unclassified_against_nt'
 otu_table       = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table.txt'
-otu_table_nonEU = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_NonEU.txt'
+otu_table_nonEU = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU.txt'
 
 ########################################################################################################################
 

@@ -5,7 +5,7 @@ library(vegan)
 library(ggplot2)
 
 
-Herbivores <- read.csv(file = "/Users/songweizhi/Desktop/Herbivore_specialisation.csv", header = TRUE)
+Herbivores <- read.csv(file = "/Users/songweizhi/PycharmProjects/SMP/demo_data/NMDS/Herbivore_specialisation.csv", header = TRUE)
 
 Herb_community <- Herbivores[5:11]
 

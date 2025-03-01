@@ -2,8 +2,8 @@ import os
 import pandas as pd
 
 
-otu_table_txt       = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_NonEU.txt'
-otu_table_stats_txt = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_NonEU_count.txt'
+otu_table_txt       = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU.txt'
+otu_table_stats_txt = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU_count.txt'
 
 
 otu_df                = pd.read_csv(otu_table_txt, sep='\t', header=0, index_col=0)
