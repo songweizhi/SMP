@@ -150,14 +150,14 @@ def rarefaction(otu_table_txt, metadata_txt, color_code_txt, interested_sample_t
 otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_NonEU.txt'
 sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250228.txt'
 color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type.txt'
-interested_sample_txt    = None
+interested_sample_txt   = None
 default_color           = '#999999'
 
-interested_group_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Sponge_Water_Sediment.txt'
-op_prefix               = 'Sponge_Water_Sediment'
-
-interested_group_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Coral_Water_Sediment.txt'
+interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Coral_Water_Sediment.txt'
 op_prefix               = 'Coral_Water_Sediment'
+
+interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Sponge_Water_Sediment.txt'
+op_prefix               = 'Sponge_Water_Sediment'
 
 # file out
 op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_1_Rarefaction'

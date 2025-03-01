@@ -49,14 +49,14 @@ def subset_df(file_in, file_out, cols_to_keep_set):
     subset_df.to_csv(file_out, sep=sep_symbol)
 
 
-def among_host_species_variability(otu_table_txt, metadata_txt, tax_rank, color_code_txt, interested_sample_txt, interested_group_txt, op_dir, default_color):
+def among_host_species_variability(otu_table_txt, metadata_txt, tax_rank, color_code_txt, interested_sample_txt, interested_group_txt, op_prefix, op_dir, default_color):
 
     # define file name
-    otu_table_subset    = '%s/otu_table_subset.txt' % op_dir
-    grouping_txt        = '%s/grouping.txt'         % op_dir
-    group_color_txt     = '%s/color.txt'            % op_dir
-    output_plot         = '%s/plot.pdf'             % op_dir
-    output_boxplot      = '%s/boxplot.pdf'          % op_dir
+    otu_table_subset    = '%s/%s_otu_table_subset.txt' % (op_dir, op_prefix)
+    grouping_txt        = '%s/%s_grouping.txt'         % (op_dir, op_prefix)
+    group_color_txt     = '%s/%s_color.txt'            % (op_dir, op_prefix)
+    output_plot         = '%s/%s_plot.pdf'             % (op_dir, op_prefix)
+    output_boxplot      = '%s/%s_boxplot.pdf'          % (op_dir, op_prefix)
 
     # get path to rarefaction_R
     pwd_current_file  = os.path.realpath(__file__)
@@ -162,18 +162,19 @@ def among_host_species_variability(otu_table_txt, metadata_txt, tax_rank, color_
 ########################################################################################################################
 
 # file in
-otu_table_txt           = '/Users/songweizhi/Desktop/SMP/00_fa_files_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table.txt'
-sample_metadata_txt     = '/Users/songweizhi/Desktop/metadata.txt'
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_NonEU.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250228.txt'
 host_taxon_rank         = 'f'
-color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/01_metadata/color_code_sample_type.txt'
+color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type.txt'
 interested_sample_txt   = None
-interested_group_txt    = '/Users/songweizhi/Desktop/SMP/01_metadata/samples_Sponge_Water_Sediment.txt'
+interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Sponge_Water_Sediment.txt'
 default_color           = '#E67E22'
 
 # file out
-op_dir                  = '/Users/songweizhi/Desktop/among_host_species_variability'
+op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_2_among_host_species_variability'
+op_prefix               = 'Sponge_Water_Sediment'
 
 ########################################################################################################################
 
-among_host_species_variability(otu_table_txt, sample_metadata_txt, host_taxon_rank, color_code_sample_txt, interested_sample_txt, interested_group_txt, op_dir, default_color)
+among_host_species_variability(otu_table_txt, sample_metadata_txt, host_taxon_rank, color_code_sample_txt, interested_sample_txt, interested_group_txt, op_prefix, op_dir, default_color)
 
