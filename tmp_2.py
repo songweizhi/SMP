@@ -31,3 +31,4 @@ for each_sample in open(interested_sample_txt):
         if otu_count >= 5:
             print('%s\t%s\t%s\t%s' % (sample_id, otu, otu_count, otu_tax))
     print()
+

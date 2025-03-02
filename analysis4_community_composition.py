@@ -169,8 +169,9 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, int
     tax_table_df_normalized = tax_table_df.copy()
     tax_table_df_normalized.iloc[:, 1:] = tax_table_df.iloc[:, 1:].div(tax_table_df.iloc[:, 1:].sum())
     tax_table_df_normalized_rounded = tax_table_df_normalized.round(3)
-    tax_table_df_normalized_rounded.to_csv(tax_table_txt, sep='\t', header=True, index=False)
     tax_table_df_normalized_rounded.set_index('Taxon', inplace=True)
+    tax_table_df_normalized_rounded_no_zero  = tax_table_df_normalized_rounded[tax_table_df_normalized_rounded.sum(axis=1) != 0]
+    tax_table_df_normalized_rounded_no_zero.to_csv(tax_table_txt, sep='\t', header=True, index=True)
 
     #################### get stacked bar plot ####################
 
@@ -204,8 +205,10 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, int
 sample_metadata_txt         = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250228.txt'
 group_host_at_rank          = 'g'  # None
 otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU.txt'
+otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU_0.0001.txt'
+
 classification_txt          = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.gtdb.2.txt'
-otu_tax_rank                = 'd'
+otu_tax_rank                = 'p'
 interested_group_txt        = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition/sample_All_17.txt'
 op_prefix                   = 'All_17_GTDB'
 
@@ -217,7 +220,7 @@ op_prefix                   = 'Coral_GTDB'
 
 interested_sample_txt       = '/Users/songweizhi/Desktop/SMP/sample_Corals_with_abundant_archaea.txt'
 interested_group_txt        = None
-op_prefix                   = 'sample_coral_with_abundant_archaea_GTDB'
+op_prefix                   = 'sample_coral_with_abundant_archaea_GTDB_0.0001'
 
 op_dir                      = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition'
 

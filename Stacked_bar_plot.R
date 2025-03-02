@@ -19,8 +19,8 @@ df = read.csv(input_table, sep='\t', header = T)
 
 sample_num = length(unique(df$Sample))
 plot_height = sample_num*0.25
+plot_height <- ifelse(plot_height < 12, 8, plot_height)
 pdf(output_plot, width =12,  height =plot_height)
-
 ggplot(df, aes(x = Sample, y = Abundance, fill = Taxa)) + 
   geom_bar(stat = "identity", position = 'stack') +
   facet_grid(Group ~ ., scales = "free", space = "free") +
