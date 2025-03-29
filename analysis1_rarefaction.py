@@ -153,11 +153,25 @@ color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_
 interested_sample_txt   = None
 default_color           = '#999999'
 
+
 interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Coral_Water_Sediment.txt'
 op_prefix               = 'Coral_Water_Sediment'
 
+
 interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Sponge_Water_Sediment.txt'
 op_prefix               = 'Sponge_Water_Sediment'
+
+
+interested_group_txt    = None
+interested_sample_txt   = '/Users/songweizhi/Desktop/4_resequence.txt'
+op_prefix               = '4_resequence'
+
+
+color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type_tmp.txt'
+interested_sample_txt   = None
+interested_group_txt    = '/Users/songweizhi/Desktop/SMP/source_Sponge_Coral_Water_Sediment.txt'
+op_prefix               = 'Sponge_Coral_Water_Sediment'
+
 
 # file out
 op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_1_Rarefaction'

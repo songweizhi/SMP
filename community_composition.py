@@ -1,5 +1,17 @@
 import os
+import argparse
 import pandas as pd
+
+
+def sep_path_basename_ext(file_in):
+
+    f_path, f_name = os.path.split(file_in)
+    if f_path == '':
+        f_path = '.'
+    f_base, f_ext = os.path.splitext(f_name)
+    f_ext = f_ext[1:]
+
+    return f_name, f_path, f_base, f_ext
 
 
 def get_shared_uniq_elements(list_1, list_2):
@@ -49,24 +61,45 @@ def subset_df(file_in, file_out, cols_to_keep_set):
     subset_df.to_csv(file_out, sep=sep_symbol)
 
 
-def community_composition(metadata_txt, host_tax_rank, interested_group_txt, interested_sample_txt, otu_table_txt, classification_txt, otu_tax_rank, op_dir, op_prefix):
+def community_composition(args):
+
+    metadata_txt            = args['m']
+    otu_table_txt           = args['otu']
+    host_tax_rank           = args['hr']
+    interested_source       = args['source']
+    interested_sample_txt   = args['sample']
+    classification_txt      = args['otu_c']
+    otu_tax_rank            = args['mr']
+    sample_group_txt        = args['g']
+    sample_to_exclude_txt   = args['e']
+    output_plot             = args['o']
+    plot_width              = args['w']
+
+    f_name, op_dir, f_base, f_ext = sep_path_basename_ext(output_plot)
+
+    if os.path.isdir(op_dir) is False:
+        os.mkdir(op_dir)
 
     # get path to rarefaction_R
-    pwd_current_file  = os.path.realpath(__file__)
-    current_file_path = '/'.join(pwd_current_file.split('/')[:-1])
-    Stacked_bar_plot_R     = '%s/Stacked_bar_plot.R' % current_file_path
+    pwd_current_file   = os.path.realpath(__file__)
+    current_file_path  = '/'.join(pwd_current_file.split('/')[:-1])
+    Stacked_bar_plot_R = '%s/Stacked_bar_plot.R' % current_file_path
     if os.path.isfile(Stacked_bar_plot_R) is False:
         print('Stacked_bar_plot.R not found, program exited!')
         exit()
 
     ############################################## define output file name #############################################
 
-    otu_table_subset            = '%s/%s_otu_table_subset.txt'                  % (op_dir, op_prefix)
-    tax_table_txt               = '%s/%s_taxa_table.txt'                        % (op_dir, op_prefix)
-    tax_table_txt_for_ggplot    = '%s/%s_taxa_table_ggplot.txt'                 % (op_dir, op_prefix)
-    output_plot_2               = '%s/%s_community_composition_stacked_bar.pdf' % (op_dir, op_prefix)
+    otu_table_subset            = '%s/%s_otu_table_subset.txt'                  % (op_dir, f_base)
+    tax_table_txt               = '%s/%s_taxa_table.txt'                        % (op_dir, f_base)
+    tax_table_txt_for_ggplot    = '%s/%s_taxa_table_ggplot.txt'                 % (op_dir, f_base)
 
     ################################################ get interested_sample_set  ###############################################
+
+    sample_to_exclude_set = set()
+    if os.path.isfile(sample_to_exclude_txt) is True:
+        for sample in open(sample_to_exclude_txt):
+            sample_to_exclude_set.add(sample.strip().split()[0])
 
     otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
 
@@ -80,59 +113,62 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, int
         if line_num_index == 1:
             col_index = {key: i for i, key in enumerate(line_split)}
         else:
-            sample_id = line_split[col_index['Sample_id']]
+            sample_id = line_split[col_index['Sample_ID']]
             sample_source = line_split[col_index['Source']]
             sample_source_dict[sample_id] = sample_source
 
     # get interested_sample_set
     interested_sample_set = set()
-    if (interested_sample_txt is None) and (interested_group_txt is None):
+    if (interested_sample_txt is None) and (interested_source is None):
         interested_sample_set = otu_table_sample_list
-    elif (interested_sample_txt is not None) and (interested_group_txt is None):
+    elif (interested_sample_txt is not None) and (interested_source is None):
         for each_sample in open(interested_sample_txt):
             interested_sample_set.add(each_sample.strip())
-    elif (interested_sample_txt is None) and (interested_group_txt is not None):
-
-        interested_group_set = set()
-        for each_grp in open(interested_group_txt):
-            interested_group_set.add(each_grp.strip())
+    elif (interested_sample_txt is None) and (interested_source is not None):
+        interested_source_set = interested_source.split(',')
 
         for each_sample in sample_source_dict:
             sample_source = sample_source_dict[each_sample]
-            if sample_source in interested_group_set:
+            if sample_source in interested_source_set:
                 interested_sample_set.add(each_sample)
 
     ################################################ subsample OTU table ###############################################
 
-    # read in metadata_txt
     sample_group_dict = dict()
-    col_index = dict()
-    line_num_index = 0
-    for each_line in open(metadata_txt):
-        line_num_index += 1
-        line_split = each_line.strip().split('\t')
-        if line_num_index == 1:
-            col_index = {key: i for i, key in enumerate(line_split)}
-        else:
-            sample_id            = line_split[col_index['Sample_id']]
-            sample_source        = line_split[col_index['Source']]
-            sample_host_taxon    = line_split[col_index['Host_taxonomy']]
-            if sample_id in interested_sample_set:
-
-                if sample_host_taxon == 'na':
-                    sample_group_dict[sample_id] = sample_source
-                else:
-                    sample_host_taxon_split = sample_host_taxon.split(';')
-                    needed_tax = '%s__' % host_tax_rank
-                    for each_rank in sample_host_taxon_split:
-                        if each_rank.startswith(host_tax_rank):
-                            needed_tax = each_rank
-
-                    group_str = '%s__%s' % (sample_source, needed_tax)
-                    sample_group_dict[sample_id] = group_str
+    if sample_group_txt is not None:
+        for each_sample in open(sample_group_txt):
+            each_sample_split = each_sample.strip().split('\t')
+            sample_group_dict[each_sample_split[0]] = each_sample_split[1]
+    else:
+        # read in metadata_txt
+        sample_group_dict = dict()
+        col_index = dict()
+        line_num_index = 0
+        for each_line in open(metadata_txt):
+            line_num_index += 1
+            line_split = each_line.strip().split('\t')
+            if line_num_index == 1:
+                col_index = {key: i for i, key in enumerate(line_split)}
+            else:
+                sample_id         = line_split[col_index['Sample_ID']]
+                sample_source     = line_split[col_index['Source']]
+                sample_host_taxon = line_split[col_index['Host_Taxonomy_NCBI']]
+                if sample_id in interested_sample_set:
+                    if sample_host_taxon == 'na':
+                        sample_group_dict[sample_id] = sample_source
+                    else:
+                        sample_host_taxon_split = sample_host_taxon.split(';')
+                        needed_tax_str = ''
+                        for each_rank in sample_host_taxon_split:
+                            rank_abbrev = each_rank.split('__')[0]
+                            if rank_abbrev in host_tax_rank:
+                                needed_tax_str += '%s;' % each_rank
+                        needed_tax_str = needed_tax_str[:-1]
+                        group_str = '%s__%s' % (sample_source, needed_tax_str)
+                        sample_group_dict[sample_id] = group_str
 
     # get shared and uniq samples
-    shared_sample_set, uniq_to_otu_table, uniq_to_interested = get_shared_uniq_elements(otu_table_sample_list, sample_group_dict.keys())
+    shared_sample_set, uniq_to_otu_table, uniq_to_interested = get_shared_uniq_elements(otu_table_sample_list, interested_sample_set)
 
     if len(uniq_to_otu_table) > 0:
         print('Samples uniq to %s:' % otu_table_txt)
@@ -186,44 +222,36 @@ def community_composition(metadata_txt, host_tax_rank, interested_group_txt, int
         else:
             tax_id = line_split[0]
             for (sample_id, taxa_abund) in zip(header_list[1:], line_split[1:]):
-                sample_group = sample_group_dict[sample_id]
-                tax_table_txt_for_ggplot_handle.write('%s\t%s\t%s\t%s\n' % (sample_group, sample_id, tax_id, taxa_abund))
+
+                sample_group = sample_source_dict.get(sample_id, 'na')
+                if sample_id in sample_group_dict:
+                    sample_group = sample_group_dict[sample_id]
+                if sample_id not in sample_to_exclude_set:
+                    tax_table_txt_for_ggplot_handle.write('%s\t%s\t%s\t%s\n' % (sample_group, sample_id, tax_id, taxa_abund))
         line_index += 1
     tax_table_txt_for_ggplot_handle.close()
 
     # run R script
-    nmds_cmd = 'Rscript %s -i %s -o %s' % (Stacked_bar_plot_R, tax_table_txt_for_ggplot, output_plot_2)
+    nmds_cmd = 'Rscript %s -i %s -o %s -x %s' % (Stacked_bar_plot_R, tax_table_txt_for_ggplot, output_plot, plot_width)
     print(nmds_cmd)
     os.system(nmds_cmd)
 
     print('Done')
 
 
-########################################################################################################################
+if __name__ == '__main__':
 
-# file in
-sample_metadata_txt         = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250228.txt'
-group_host_at_rank          = 'g'  # None
-otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU.txt'
-otu_table_txt               = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_nonEU_0.0001.txt'
-
-classification_txt          = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.gtdb.2.txt'
-otu_tax_rank                = 'p'
-interested_group_txt        = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition/sample_All_17.txt'
-op_prefix                   = 'All_17_GTDB'
-
-interested_group_txt        = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Coral_Water_Sediment.txt'
-op_prefix                   = 'Coral_Water_Sediment_GTDB'
-
-interested_group_txt        = '/Users/songweizhi/Desktop/SMP/00_metadata/samples_Coral.txt'
-op_prefix                   = 'Coral_GTDB'
-
-interested_sample_txt       = '/Users/songweizhi/Desktop/SMP/sample_Corals_with_abundant_archaea.txt'
-interested_group_txt        = None
-op_prefix                   = 'sample_coral_with_abundant_archaea_GTDB_0.0001'
-
-op_dir                      = '/Users/songweizhi/Desktop/SMP/Analysis_4_Community_composition'
-
-########################################################################################################################
-
-community_composition(sample_metadata_txt, group_host_at_rank, interested_group_txt, interested_sample_txt, otu_table_txt, classification_txt, otu_tax_rank, op_dir, op_prefix)
+    blast_parser = argparse.ArgumentParser()
+    blast_parser.add_argument('-m',      required=True,                          help='metadata file')
+    blast_parser.add_argument('-o',      required=True,                          help='output pdf')
+    blast_parser.add_argument('-otu',    required=True,                          help='otu table')
+    blast_parser.add_argument('-otu_c',  required=True,                          help='otu classification_txt')
+    blast_parser.add_argument('-mr',     required=True,                          help='microbiome taxon rank')
+    blast_parser.add_argument('-sample', required=False, default=None,           help='interested samples')
+    blast_parser.add_argument('-source', required=False, default=None,           help='interested sample source')
+    blast_parser.add_argument('-g',      required=False, default=None,           help='sample group txt')
+    blast_parser.add_argument('-hr',     required=False, default=None,           help='group sample by host taxonomy, specify taxon rank for grouping')
+    blast_parser.add_argument('-e',      required=False, default='',             help='samples to exclude from the output')
+    blast_parser.add_argument('-w',      required=False, default=18,type=int,    help='samples to exclude from the output')
+    args = vars(blast_parser.parse_args())
+    community_composition(args)

@@ -80,9 +80,9 @@ def among_host_species_variability(otu_table_txt, metadata_txt, tax_rank, color_
         if line_num_index == 1:
             col_index = {key: i for i, key in enumerate(line_split)}
         else:
-            sample_id            = line_split[col_index['Sample_id']]
+            sample_id            = line_split[col_index['Sample_ID']]
             sample_source        = line_split[col_index['Source']]
-            sample_host_tax_str = line_split[col_index['Host_taxonomy']]
+            sample_host_tax_str = line_split[col_index['Host_Taxonomy_NCBI']]
             sample_host_tax_split = sample_host_tax_str.split(';')
             if sample_source in interested_source_set:
                 if sample_source == 'Water':
@@ -176,5 +176,19 @@ op_prefix               = 'Sponge_Water_Sediment'
 
 ########################################################################################################################
 
-among_host_species_variability(otu_table_txt, sample_metadata_txt, host_taxon_rank, color_code_sample_txt, interested_sample_txt, interested_group_txt, op_prefix, op_dir, default_color)
+# file in
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB_20250325/s07_AllSamples_unoise_otu_table_noEU_mim20000_abd_0.001.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250327.txt'
+host_taxon_rank         = 'f'
+color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type.txt'
+interested_sample_txt   = None
+interested_group_txt    = '/Users/songweizhi/Desktop/SMP/source_Coral_Water_Sediment.txt'
+default_color           = '#E67E22'
 
+# file out
+op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_2_among_host_species_variability'
+op_prefix               = 'Coral_Water_Sediment'
+
+########################################################################################################################
+
+among_host_species_variability(otu_table_txt, sample_metadata_txt, host_taxon_rank, color_code_sample_txt, interested_sample_txt, interested_group_txt, op_prefix, op_dir, default_color)
