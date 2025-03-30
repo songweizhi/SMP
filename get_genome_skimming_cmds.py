@@ -54,7 +54,7 @@ def get_hit_seq_seq(sample_id, marker, assembly_fa, ref_seq_file, blast_op, extr
 
 ########################################################################################################################
 
-sample_id_txt           = '/Users/songweizhi/Desktop/SMP/genome_skimming/sample_id.txt'
+sample_id_txt           = '/Users/songweizhi/Desktop/SMP/genome_skimming/sample_id_19.txt'
 ref_seq_file_28s        = '/Users/songweizhi/Desktop/SMP/Host_barcoding/28S_crop.fa'
 ref_seq_file_coi        = '/Users/songweizhi/Desktop/SMP/Host_barcoding/COI_crop.fa'
 genome_skimming_28s_fa  = '/Users/songweizhi/Desktop/SMP/genome_skimming/Genome_skimming_28S.fasta'
@@ -75,35 +75,36 @@ for each in open(sample_id_txt):
     # print(fastqc_cmd)
 
     trim_cmd = 'trimmomatic PE -threads 30 -phred33 %s_1.fq.gz %s_2.fq.gz %s_1_P.fq.gz %s_1_UP.fq.gz %s_2_P.fq.gz %s_2_UP.fq.gz ILLUMINACLIP:/scratch/PI/ocessongwz/DB/trimmomatic_adapters/TruSeq3-PE-2.fa:2:30:10 CROP:145 HEADCROP:5 LEADING:20 TRAILING:20 SLIDINGWINDOW:4:25 MINLEN:35' % (sample_id, sample_id, sample_id, sample_id, sample_id, sample_id)
-    # print(trim_cmd)
+    trim_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 11:59:59 -t 36 -conda mybase2 -n trim%s -c "%s"' % (file_index, trim_cmd)
+    #print(trim_cmd)
 
     fastqc_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 11:59:59 -t 36 -conda mybase2 -n qc_%s -c "fastqc %s_1_P.fq.gz %s_2_P.fq.gz"' % (file_index, sample_id, sample_id)
-    # print(fastqc_cmd)
+    #print(fastqc_cmd)
 
     # combine unpaired reads
     combine_unpaired_reads_cmd = 'gunzip %s_1_UP.fq.gz; gunzip %s_2_UP.fq.gz; cat %s_1_UP.fq %s_2_UP.fq > %s_UP.fq; gzip %s_UP.fq' % (sample_id, sample_id, sample_id, sample_id, sample_id, sample_id)
-    # print(combine_unpaired_reads_cmd)
+    #print(combine_unpaired_reads_cmd)
 
     # spades
     spades_cmd = 'spades.py --meta -t 36 -k 55,77,99,127 -1 %s_1_P.fq.gz -2 %s_2_P.fq.gz -s %s_UP.fq.gz -o %s_spades_k55-127' % (sample_id, sample_id, sample_id, sample_id)
     spades_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 71:59:59 -t 36 -conda mybase2 -n spades_%s -c "%s"' % (file_index, spades_cmd)
-    # print(spades_cmd)
+    #print(spades_cmd)
 
     # copy assemblies
     copy_assemblies_cmd = 'cp %s_spades_k55-127/scaffolds.fasta spades_k55-127_scaffolds/%s.fasta' % (sample_id, sample_id)
-    #print(copy_assemblies_cmd)
+    # print(copy_assemblies_cmd)
 
-    # # mkblastdb
-    # mkblastdb_cmd = 'makeblastdb -in %s.fasta -dbtype nucl -parse_seqids' % sample_id
-    # mkblastdb_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 11:59:59 -t 36 -conda mybase2 -n mkblastdb_%s -c "%s"' % (file_index, mkblastdb_cmd)
-    # # print(mkblastdb_cmd)
-    #
-    # # blast barcoding gene against assemblies
-    # blast_cmd_28s = 'blastn -query 28S_crop.fa -db /scratch/PI/ocessongwz/SMP/genome_skimming/blastdb/%s.fasta -out %s_28S.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
-    # blast_cmd_coi = 'blastn -query COI_crop.fa -db /scratch/PI/ocessongwz/SMP/genome_skimming/blastdb/%s.fasta -out %s_COI.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
-    # blast_cmd_both = '%s; %s' % (blast_cmd_28s, blast_cmd_coi)
-    # blast_cmd_both = 'BioSAK hpc3 -q cpu -a oces -wt 11:59:59 -t 36 -conda mybase2 -n blast_%s -c "%s"' % (file_index, blast_cmd_both)
-    # print(blast_cmd_both)
+    # mkblastdb
+    mkblastdb_cmd = 'makeblastdb -in %s.fasta -dbtype nucl -parse_seqids' % sample_id
+    mkblastdb_cmd = 'BioSAK hpc3 -q cpu-share -wt 11:59:59 -t 36 -conda mybase2 -n mkblastdb_%s -c "%s"' % (file_index, mkblastdb_cmd)
+    #print(mkblastdb_cmd)
+
+    # blast barcoding gene against assemblies
+    blast_cmd_28s = 'blastn -query 28S_crop.fa -db /scratch/PI/ocessongwz/SMP/genome_skimming/blastdb/%s.fasta -out %s_28S.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
+    blast_cmd_coi = 'blastn -query COI_crop.fa -db /scratch/PI/ocessongwz/SMP/genome_skimming/blastdb/%s.fasta -out %s_COI.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
+    blast_cmd_both = '%s; %s' % (blast_cmd_28s, blast_cmd_coi)
+    blast_cmd_both = 'BioSAK hpc3 -q cpu-share -wt 11:59:59 -t 36 -conda mybase2 -n blast_%s -c "%s"' % (file_index, blast_cmd_both)
+    print(blast_cmd_both)
 
     # Barrnap
     # # parse barrnap output
@@ -122,7 +123,8 @@ for each in open(sample_id_txt):
     blast_op_28s        = '/Users/songweizhi/Desktop/SMP/genome_skimming/blast/%s_28S.txt'                  % sample_id
 
     if os.path.isfile(blast_op_28s):
-        get_hit_seq_seq(sample_id, marker, assembly_fa, ref_seq_file_28s, blast_op_28s, genome_skimming_28s_fa)
+        pass
+        # get_hit_seq_seq(sample_id, marker, assembly_fa, ref_seq_file_28s, blast_op_28s, genome_skimming_28s_fa)
 
     ####################################################################################################################
 
@@ -132,7 +134,8 @@ for each in open(sample_id_txt):
     blast_op_coi        = '/Users/songweizhi/Desktop/SMP/genome_skimming/blast/%s_COI.txt'                  % sample_id
 
     if os.path.isfile(blast_op_coi):
-        get_hit_seq_seq(sample_id, marker, assembly_fa, ref_seq_file_coi, blast_op_coi, genome_skimming_coi_fa)
+        pass
+        # get_hit_seq_seq(sample_id, marker, assembly_fa, ref_seq_file_coi, blast_op_coi, genome_skimming_coi_fa)
 
     ####################################################################################################################
 
