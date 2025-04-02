@@ -25,6 +25,7 @@ plot_height <- ifelse(plot_height < 12, 8, plot_height)
 pdf(output_plot, width =plot_width,  height =plot_height)
 ggplot(df, aes(x = Sample, y = Abundance, fill = Taxa)) + 
   geom_bar(stat = "identity", position = 'stack') +
+  #scale_fill_brewer(palette = "batlow") +
   # scale_y_discrete(expand = c(0.01,0.01))+
   facet_grid(Group ~ ., scales = "free", space = "free") +
   theme(axis.text.x = element_text(angle = 90, hjust = 0.5,vjust = 0.5),

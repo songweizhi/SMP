@@ -14,6 +14,14 @@ def sep_path_basename_ext(file_in):
     return f_name, f_path, f_base, f_ext
 
 
+def transpose_csv(file_in, file_out, sep_symbol, column_name_pos, row_name_pos):
+
+    csv = pd.read_csv(file_in, sep=sep_symbol, header=column_name_pos, index_col=row_name_pos)
+    df_csv = pd.DataFrame(data=csv)
+    transposed_csv = df_csv.T
+    transposed_csv.to_csv(file_out, sep=sep_symbol)
+
+
 def get_shared_uniq_elements(list_1, list_2):
 
     shared_set = set(list_1).intersection(list_2)
@@ -92,6 +100,8 @@ def community_composition(args):
 
     otu_table_subset            = '%s/%s_otu_table_subset.txt'                  % (op_dir, f_base)
     tax_table_txt               = '%s/%s_taxa_table.txt'                        % (op_dir, f_base)
+    tax_table_txt_t             = '%s/%s_taxa_table_T.txt'                      % (op_dir, f_base)
+    tax_table_txt_t_desc        = '%s/%s_taxa_table_T_desc.txt'                 % (op_dir, f_base)
     tax_table_txt_for_ggplot    = '%s/%s_taxa_table_ggplot.txt'                 % (op_dir, f_base)
 
     ################################################ get interested_sample_set  ###############################################
@@ -209,12 +219,16 @@ def community_composition(args):
     tax_table_df_normalized_rounded_no_zero  = tax_table_df_normalized_rounded[tax_table_df_normalized_rounded.sum(axis=1) != 0]
     tax_table_df_normalized_rounded_no_zero.to_csv(tax_table_txt, sep='\t', header=True, index=True)
 
+    # transpose_csv
+    transpose_csv(tax_table_txt, tax_table_txt_t, '\t', 0, 0)
+
     #################### get stacked bar plot ####################
 
     tax_table_txt_for_ggplot_handle = open(tax_table_txt_for_ggplot, 'w')
     tax_table_txt_for_ggplot_handle.write('Group\tSample\tTaxa\tAbundance\n')
     header_list = []
     line_index = 0
+    sample_to_group_dict = dict()
     for each_line in open(tax_table_txt):
         line_split = each_line.strip().split('\t')
         if line_index == 0:
@@ -228,14 +242,32 @@ def community_composition(args):
                     sample_group = sample_group_dict[sample_id]
                 if sample_id not in sample_to_exclude_set:
                     tax_table_txt_for_ggplot_handle.write('%s\t%s\t%s\t%s\n' % (sample_group, sample_id, tax_id, taxa_abund))
+                    sample_to_group_dict[sample_id] = '%s__%s' % (sample_group, sample_id)
         line_index += 1
     tax_table_txt_for_ggplot_handle.close()
+
+    # add desc to tax_table_txt_t
+    tax_table_txt_t_desc_handle = open(tax_table_txt_t_desc, 'w')
+    line_index = 0
+    for each_line in open(tax_table_txt_t):
+        if line_index == 0:
+            tax_table_txt_t_desc_handle.write(each_line)
+        else:
+            each_line_split = each_line.strip().split('\t')
+            sample_id = each_line_split[0]
+            sample_value_list = each_line_split[1:]
+            sample_id_with_desc = sample_to_group_dict.get(sample_id, sample_id)
+            if sample_id not in sample_to_exclude_set:
+                tax_table_txt_t_desc_handle.write('%s\t%s\n' % (sample_id_with_desc, '\t'.join(sample_value_list)))
+        line_index += 1
+    tax_table_txt_t_desc_handle.close()
 
     # run R script
     nmds_cmd = 'Rscript %s -i %s -o %s -x %s' % (Stacked_bar_plot_R, tax_table_txt_for_ggplot, output_plot, plot_width)
     print(nmds_cmd)
     os.system(nmds_cmd)
 
+    os.remove(tax_table_txt_t)
     print('Done')
 
 
@@ -252,6 +284,6 @@ if __name__ == '__main__':
     blast_parser.add_argument('-g',      required=False, default=None,           help='sample group txt')
     blast_parser.add_argument('-hr',     required=False, default=None,           help='group sample by host taxonomy, specify taxon rank for grouping')
     blast_parser.add_argument('-e',      required=False, default='',             help='samples to exclude from the output')
-    blast_parser.add_argument('-w',      required=False, default=18,type=int,    help='samples to exclude from the output')
+    blast_parser.add_argument('-w',      required=False, default=18,type=int,    help='plot width')
     args = vars(blast_parser.parse_args())
     community_composition(args)
