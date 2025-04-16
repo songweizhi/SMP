@@ -17,6 +17,13 @@ def transpose_csv(file_in, file_out, sep_symbol, column_name_pos, row_name_pos):
     transposed_csv.to_csv(file_out, sep=sep_symbol)
 
 
+def df_take_percentage_by_col(df_in_file, df_out_file):
+    df_in = pd.read_csv(df_in_file, sep='\t', header=0, index_col=0)
+    df_out = df_in.div(df_in.sum()) * 100
+    df_out = df_out.round(3)
+    df_out.to_csv(df_out_file, sep='\t')
+
+
 def get_shared_uniq_elements(list_1, list_2):
 
     shared_set = set(list_1).intersection(list_2)
@@ -198,16 +205,21 @@ def get_color_list(color_num):
     return color_list_to_return_sorted
 
 
-def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_taxon_rank, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix):
+def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix):
 
     # define file name
-    otu_table_subset                                = '%s/%s_otu_table_subset1.txt'                      % (op_dir, op_prefix)
-    otu_table_subset2_only_classified               = '%s/%s_otu_table_subset2_only_classified.txt'      % (op_dir, op_prefix)
-    otu_table_subset3_only_classified_abd_cutoff    = '%s/%s_otu_table_subset3_only_classified_abd.txt'  % (op_dir, op_prefix)
-    otu_table_subset_t                              = '%s/%s_otu_table_subset4_T.txt'                    % (op_dir, op_prefix)
-    otu_table_subset_t_no_0_otu                     = '%s/%s_otu_table_subset5_T_no_0_otu.txt'           % (op_dir, op_prefix)
-    otu_table_subset_t_meta                         = '%s/%s_otu_table_subset6_T_with_group.txt'         % (op_dir, op_prefix)
-    output_plot                                     = '%s/%s_nmds.pdf'                                   % (op_dir, op_prefix)
+    otu_table_subset                                    = '%s/%s_otu_table_subset1.txt'                             % (op_dir, op_prefix)
+    otu_table_subset2_only_classified                   = '%s/%s_otu_table_subset2_only_classified.txt'             % (op_dir, op_prefix)
+    otu_table_subset3_only_classified_abd_cutoff        = '%s/%s_otu_table_subset3_only_classified_abd.txt'         % (op_dir, op_prefix)
+    otu_table_subset3_only_classified_abd_cutoff_pct    = '%s/%s_otu_table_subset3_only_classified_abd_pct.txt'     % (op_dir, op_prefix)
+    otu_table_subset_t                                  = '%s/%s_otu_table_subset4_T.txt'                           % (op_dir, op_prefix)
+    otu_table_subset_t_no_0_otu                         = '%s/%s_otu_table_subset5_T_no_0_otu.txt'                  % (op_dir, op_prefix)
+    otu_table_subset_t_meta                             = '%s/%s_otu_table_subset6_T_with_group.txt'                % (op_dir, op_prefix)
+    otu_table_subset_t_meta_genus_level                 = '%s/%s_otu_table_subset6_T_with_group_genus_level.txt'    % (op_dir, op_prefix)
+    output_plot                                         = '%s/%s_nmds.pdf'                                          % (op_dir, op_prefix)
+    output_plot_genus_level                             = '%s/%s_nmds_genus_level.pdf'                              % (op_dir, op_prefix)
+
+    otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
 
     # get path to rarefaction_R
     pwd_current_file  = os.path.realpath(__file__)
@@ -218,13 +230,47 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
         exit()
 
     sample_to_exclude_set = set()
-    if os.path.isfile(sample_to_exclude_txt) is True:
-        for sample in open(sample_to_exclude_txt):
-            sample_to_exclude_set.add(sample.strip().split()[0])
+    if sample_to_exclude_txt is not None:
+        if os.path.isfile(sample_to_exclude_txt) is True:
+            for sample in open(sample_to_exclude_txt):
+                sample_to_exclude_set.add(sample.strip().split()[0])
 
-    interested_source_set = set()
-    for each_grp in open(interested_group_txt):
-        interested_source_set.add(each_grp.strip())
+    if interested_source is not None:
+        interested_source_set = interested_source.split(',')
+
+    # read in sample_source_txt
+    sample_source_dict = dict()
+    col_index = dict()
+    line_num_index = 0
+    for each_line in open(metadata_txt):
+        line_num_index += 1
+        line_split = each_line.strip().split('\t')
+        if line_num_index == 1:
+            col_index = {key: i for i, key in enumerate(line_split)}
+        else:
+            sample_id = line_split[col_index['Sample_ID']]
+            sample_source = line_split[col_index['Source']]
+            sample_source_dict[sample_id] = sample_source
+
+    # get interested_sample_set
+    interested_sample_set = set()
+    if (interested_sample_txt is None) and (interested_source is None):
+        interested_sample_set = otu_table_sample_list
+    elif (interested_sample_txt is not None) and (interested_source is None):
+        for each_sample in open(interested_sample_txt):
+            interested_sample_set.add(each_sample.strip())
+    elif (interested_sample_txt is None) and (interested_source is not None):
+        interested_source_set = interested_source.split(',')
+
+        for each_sample in sample_source_dict:
+            sample_source = sample_source_dict[each_sample]
+            if sample_source in interested_source_set:
+                interested_sample_set.add(each_sample)
+
+    # get shared and uniq samples
+    shared_sample_set, uniq_to_otu_table, uniq_to_interested = get_shared_uniq_elements(otu_table_sample_list, interested_sample_set)
+    print('uniq_to_interested')
+    print(uniq_to_interested)
 
     # read in metadata_txt
     sample_group_dict = dict()
@@ -242,7 +288,7 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
             sample_host_tax_split = sample_host_tax_str.split(';')
 
             if sample_id not in sample_to_exclude_set:
-                if sample_source in interested_source_set:
+                if sample_id in shared_sample_set:
                     if sample_source == 'Water':
                         sample_group_dict[sample_id] = 'Water'
                     elif sample_source == 'Sediment':
@@ -253,10 +299,6 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
                             if each_rank.startswith(host_taxon_rank):
                                 needed_tax = each_rank
                         sample_group_dict[sample_id] = needed_tax
-
-    # get shared and uniq samples
-    otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
-    shared_sample_set, uniq_to_otu_table, uniq_to_interested = get_shared_uniq_elements(otu_table_sample_list, sample_group_dict.keys())
 
     if len(uniq_to_otu_table) > 0:
         print('Samples uniq to %s:' % otu_table_txt)
@@ -287,20 +329,33 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
 
     # remove unclassified otu from OTU table
     unclassified_otu_set = set()
+    otu_genus_dict = dict()
     for each in open(otu_classification_txt):
         each_split = each.strip().split('\t')
         otu_id = each_split[0]
         otu_tax = each_split[1]
         if otu_tax == 'Unclassified':
             unclassified_otu_set.add(otu_id)
+        else:
+            otu_tax_split = otu_tax.split(';')
+            otu_genus = ''
+            for each in otu_tax_split:
+                if each.startswith('g__'):
+                    otu_genus = each
+            if otu_genus != 'g__':
+                otu_genus_dict[otu_id] = otu_genus
 
     subset_df1(otu_table_subset, otu_table_subset2_only_classified, unclassified_otu_set, None, True)
 
     # rm_low_depth_sample
     rm_low_sum_cols(otu_table_subset2_only_classified, min_seq_num, otu_table_subset3_only_classified_abd_cutoff)
 
+    # take percentage
+    df_take_percentage_by_col(otu_table_subset3_only_classified_abd_cutoff, otu_table_subset3_only_classified_abd_cutoff_pct)
+    table_to_use = otu_table_subset3_only_classified_abd_cutoff_pct
+
     # transpose otu table
-    transpose_csv(otu_table_subset3_only_classified_abd_cutoff, otu_table_subset_t, '\t', 0, 0)
+    transpose_csv(table_to_use, otu_table_subset_t, '\t', 0, 0)
 
     rm_low_sum_cols(otu_table_subset_t, 1, otu_table_subset_t_no_0_otu)
 
@@ -374,8 +429,50 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
         line_index += 1
     otu_table_subset_t_meta_handle.close()
 
+    # get otu table at genus level
+    otu_table_otu_list = open(otu_table_subset_t_meta).readline().strip().split('\t')[4:]
+    genus_set = set()
+    for otu in otu_table_otu_list:
+        otu_genus = otu_genus_dict.get(otu, '')
+        if otu_genus != '':
+            genus_set.add(otu_genus)
+
+    genus_list_sorted = sorted(list(genus_set))
+
+    otu_table_subset_t_meta_genus_level_handle = open(otu_table_subset_t_meta_genus_level, 'w')
+    line_index = 0
+    otu_id_list = []
+    for each_sample in open(otu_table_subset_t_meta):
+        each_sample_split = each_sample.strip().split('\t')
+        if line_index == 0:
+            otu_id_list = each_sample_split[4:]
+            otu_table_subset_t_meta_genus_level_handle.write('%s\t%s\n' % ('\t'.join(each_sample_split[:4]), '\t'.join(genus_list_sorted)))
+        else:
+            genus_count_dict = dict()
+            otu_count_list = each_sample_split[4:]
+            for (otu_id, otu_count) in zip(otu_id_list, otu_count_list):
+                otu_genus = otu_genus_dict.get(otu_id, '')
+                if otu_genus != '':
+                    if otu_genus not in genus_count_dict:
+                        genus_count_dict[otu_genus] = 0
+                    genus_count_dict[otu_genus] += float(otu_count)
+
+            genus_count_list = []
+            for genus in genus_list_sorted:
+                genus_count = genus_count_dict.get(genus, 0)
+                genus_count = float("{0:.4f}".format(genus_count))
+                genus_count_list.append(str(genus_count))
+
+            otu_table_subset_t_meta_genus_level_handle.write('%s\t%s\n' % ('\t'.join(each_sample_split[:4]) , '\t'.join(genus_count_list) ))
+        line_index += 1
+    otu_table_subset_t_meta_genus_level_handle.close()
+
     # run R script
     nmds_cmd = 'Rscript %s -i %s -o %s' % (nmds_R, otu_table_subset_t_meta, output_plot)
+    print(nmds_cmd)
+    os.system(nmds_cmd)
+
+    nmds_cmd = 'Rscript %s -i %s -o %s' % (nmds_R, otu_table_subset_t_meta_genus_level, output_plot_genus_level)
     print(nmds_cmd)
     os.system(nmds_cmd)
 
@@ -416,7 +513,7 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
 # unclassified OTUs will be ignored from this analysis
 
 otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/plot_CC/CC_Coral_Water_Sediment_cof_p_GTDB_20250401_min_pct_1_otu_table_subset.txt'
-sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250401.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250408.txt'
 host_taxon_rank         = 'f'
 otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.GTDB.2.txt'
 minimum_seq_num         = 10000
@@ -425,14 +522,27 @@ minimum_seq_num         = 10000
 # sample_to_exclude_txt   = '/Users/songweizhi/Desktop/SMP/Coral_samples_to_ignore.txt'
 # op_prefix               = 'Coral_Water_Sediment_20250401'
 
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000_min_pct_1.txt'
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000.txt'
 otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000_min_pct_0.1.txt'
-interested_group_txt    = '/Users/songweizhi/Desktop/SMP/source_Coral_Water_Sediment.txt'
-sample_to_exclude_txt   = '/Users/songweizhi/Desktop/SMP/samples_Coral5_ignore51_Shan.txt'
 
+interested_source       = None
+sample_to_exclude_txt   = None
+interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/coral_sample_with_barcoding_30_with_Water_Sediment_69.txt'
 op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
-op_prefix               = 'Coral_Water_Sediment_20250401_ignore51_Shan'
+op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69'
+
+
+# coral + Hydrozoa
+interested_source       = None
+sample_to_exclude_txt   = None
+host_taxon_rank         = 'f'
+interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/coral_sample_with_barcoding_30_with_Water_Sediment_69_plus_4_Hydrozoa.txt'
+op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
+op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_plus_4_Hydrozoa'
+
 
 ########################################################################################################################
 
-nmds(otu_table_txt, otu_classification_txt, minimum_seq_num, sample_metadata_txt, host_taxon_rank, interested_group_txt, sample_to_exclude_txt, op_dir, op_prefix)
+nmds(otu_table_txt, otu_classification_txt, minimum_seq_num, sample_metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix)
 

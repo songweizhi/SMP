@@ -83,6 +83,9 @@ def community_composition(args):
     output_plot             = args['o']
     plot_width              = args['w']
 
+    host_tax_rank_list = host_tax_rank.split(',')
+
+
     f_name, op_dir, f_base, f_ext = sep_path_basename_ext(output_plot)
 
     if os.path.isdir(op_dir) is False:
@@ -171,7 +174,7 @@ def community_composition(args):
                         needed_tax_str = ''
                         for each_rank in sample_host_taxon_split:
                             rank_abbrev = each_rank.split('__')[0]
-                            if rank_abbrev in host_tax_rank:
+                            if rank_abbrev in host_tax_rank_list:
                                 needed_tax_str += '%s;' % each_rank
                         needed_tax_str = needed_tax_str[:-1]
                         group_str = '%s__%s' % (sample_source, needed_tax_str)

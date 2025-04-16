@@ -32,6 +32,7 @@ def pheatmap_OTU(args):
     otu_annotation_rank     = args['oar']
     sample_label_rank       = args['slr']
     sample_annotation_rank  = args['sar']
+    zero_as_na              = args['na']
     output_plot             = args['o']
 
     sample_label_rank_list = sample_label_rank.split(',')
@@ -50,10 +51,10 @@ def pheatmap_OTU(args):
     if os.path.isdir(plot_path) is False:
         os.mkdir(plot_path)
 
-    otu_table_txt_desc_tmp  = '%s/%s_OTU_table_with_desc.txt'   % (plot_path, plot_base)
-    otu_table_txt_desc      = '%s/%s_OTU_table_with_desc.txt'   % (plot_path, plot_base)
-    col_annotation_txt      = '%s/%s_col_annotation.txt'        % (plot_path, plot_base)
-    row_annotation_txt      = '%s/%s_row_annotation.txt'        % (plot_path, plot_base)
+    otu_table_txt_desc_tmp  = '%s/%s_OTU_table_with_desc.tmp.txt'   % (plot_path, plot_base)
+    otu_table_txt_desc      = '%s/%s_OTU_table_with_desc.txt'       % (plot_path, plot_base)
+    col_annotation_txt      = '%s/%s_col_annotation.txt'            % (plot_path, plot_base)
+    row_annotation_txt      = '%s/%s_row_annotation.txt'            % (plot_path, plot_base)
 
     otu_tax_dict = dict()
     for otu_tax in open(classification_txt):
@@ -80,6 +81,8 @@ def pheatmap_OTU(args):
             sample_group_dict[sample_id] = sample_group
 
     # write out
+    longest_sample_label = 0
+    longest_otu_label = 0
     annotation_to_sample_dict = dict()
     label_to_sample_dict = dict()
     sample_num = 0
@@ -97,6 +100,11 @@ def pheatmap_OTU(args):
             label_list_with_desc = []
             for each_sample in each_line_split:
                 sample_group_str = sample_group_dict[each_sample]
+                if sample_group_str == 'Water':
+                    sample_group_str = 'water'
+                if sample_group_str == 'Sediment':
+                    sample_group_str = 'sediment'
+
                 sample_label_tax = sample_group_str
                 sample_annotation_tax = sample_group_str
                 if ';' in sample_group_str:
@@ -110,6 +118,8 @@ def pheatmap_OTU(args):
                             sample_annotation_tax = each_rank
                     sample_label_tax = ';'.join(sample_label_tax_list)
                 sample_new_label = '%s__%s' % (sample_label_tax, each_sample)
+                if len(sample_new_label) > longest_sample_label:
+                    longest_sample_label = len(sample_new_label)
                 col_annotation_txt_handle.write('%s\t%s\n' % (sample_new_label, sample_annotation_tax))
 
                 # get annotation_to_sample_dict
@@ -126,59 +136,71 @@ def pheatmap_OTU(args):
             otu_table_txt_desc_tmp_handle.write('\t%s\n' % '\t'.join(label_list_with_desc))
         else:
             otu_id = each_line_split[0]
+            otu_count_list = each_line_split[1:]
             otu_tax_str = otu_tax_dict.get(otu_id, 'na')
             otu_tax_str_split = otu_tax_str.split(';')
+
+            # turn 0 to NA
+            otu_count_list_0_as_na = []
+            for value in otu_count_list:
+                if float(value) == 0:
+                    otu_count_list_0_as_na.append('NA')
+                else:
+                    otu_count_list_0_as_na.append(value)
+            if zero_as_na is True:
+                otu_count_list = otu_count_list_0_as_na
 
             otu_label_tax = 'na'
             otu_annotation_tax = 'na'
             if otu_tax_str == 'Unclassified':
-                otu_label_tax = 'Unclassified'
-                otu_annotation_tax = 'Unclassified'
+                otu_label_tax = 'unclassified'
+                otu_annotation_tax = 'unclassified'
             else:
+                otu_label_tax_list = []
                 for each_rank in otu_tax_str_split:
+                    rank_abbrev = each_rank.split('__')[0]
+                    if rank_abbrev in otu_label_rank_list:
+                        otu_label_tax_list.append(each_rank)
+
                     if each_rank.startswith('%s__' % otu_label_rank):
                         otu_label_tax = each_rank
+
                     if each_rank.startswith('%s__' % otu_annotation_rank):
                         otu_annotation_tax = each_rank
 
-            otu_new_label = '%s__%s' % (otu_id, otu_label_tax)
+                otu_label_tax = ';'.join(otu_label_tax_list)
+
+            otu_new_label = '%s__%s' % (otu_label_tax, otu_id)
+
+            if len(otu_new_label) > longest_otu_label:
+                longest_otu_label = len(otu_new_label)
+
             row_annotation_txt_handle.write('%s\t%s\n' % (otu_new_label, otu_annotation_tax))
-            otu_table_txt_desc_tmp_handle.write('%s\t%s\n' % (otu_new_label, '\t'.join(each_line_split[1:])))
+            otu_table_txt_desc_tmp_handle.write('%s\t%s\n' % (otu_new_label, '\t'.join(otu_count_list)))
         line_index += 1
         otu_num += 1
     otu_table_txt_desc_tmp_handle.close()
     col_annotation_txt_handle.close()
     row_annotation_txt_handle.close()
 
-    # dict_for_col_order = annotation_to_sample_dict
-    # dict_for_col_order = label_to_sample_dict
-    #
-    # sample_order_for_plot = []
-    # sample_list_water = []
-    # sample_list_sediment = []
-    # for each_anno in dict_for_col_order:
-    #     anno_sample_list = sorted(list(dict_for_col_order[each_anno]))
-    #     if each_anno in ['Water', 'water', 'WATER']:
-    #         sample_list_water = anno_sample_list
-    #     elif each_anno in ['Sediment', 'sediment', 'SEDIMENT']:
-    #         sample_list_sediment = anno_sample_list
-    #     else:
-    #         for each_sample in anno_sample_list:
-    #             sample_order_for_plot.append(each_sample)
-    # for water_sample in sample_list_water:
-    #     sample_order_for_plot.append(water_sample)
-    # for sediment_sample in sample_list_sediment:
-    #     sample_order_for_plot.append(sediment_sample)
+    #################### reorder df columns and rows ####################
 
-    # reorder df columns
-    # reorder_df_col(otu_table_txt_desc_tmp, otu_table_txt_desc, '\t', 0, 0, sample_order_for_plot)
+    df = pd.read_csv(otu_table_txt_desc_tmp, sep='\t', header=0, index_col=0)
+    df = df[sorted(df.columns)]
+    df = df.sort_index(ascending=True)
+    df.to_csv(otu_table_txt_desc, sep='\t')
+
+    #################### run R script ####################
 
     # run R script
-    plot_width = sample_num*0.2 + 5
-    plot_height = otu_num*0.45 + 2
+    plot_width   = (sample_num*0.2) + (longest_otu_label*0.05)    + 5
+    plot_height  = (otu_num*0.35)   + (longest_sample_label*0.03) + 2
+    plot_width   = round(plot_width)
+    plot_height  = round(plot_height)
     pheatmap_cmd = 'Rscript %s -i %s -o %s -r %s -c %s -x %s -y %s' % (pheatmap_OTU_R, otu_table_txt_desc, output_plot, row_annotation_txt, col_annotation_txt, plot_width, plot_height)
     print(pheatmap_cmd)
     os.system(pheatmap_cmd)
+
     print('Done!')
 
 
@@ -192,6 +214,7 @@ if __name__ == '__main__':
     blast_parser.add_argument('-oar',   required=True,  help='otu_annotation_rank')
     blast_parser.add_argument('-slr',   required=True,  help='sample_label_rank')
     blast_parser.add_argument('-sar',   required=True,  help='sample_annotation_rank')
+    blast_parser.add_argument('-na',    required=False, action="store_true",  help='turn 0 to NA')
     blast_parser.add_argument('-o',     required=True,  help='output pdf')
     args = vars(blast_parser.parse_args())
     pheatmap_OTU(args)

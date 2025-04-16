@@ -32,9 +32,12 @@ otu_annotation_df = read.csv(file = row_annotation_txt, sep = '\t', header = TRU
 # plot and save
 pdf(output_plot, width =plot_width,  height =plot_height)
 my_heatmap <- pheatmap(otu_df,
-                       cluster_rows=TRUE, # cutree_rows = 2,
-                       cluster_cols=TRUE, cutree_cols = 10,
+                       na_col = '#000000',
+                       cluster_rows=FALSE, # cutree_rows = 2,
+                       cluster_cols=FALSE, # cutree_cols = 10,
+                       # gaps_row = '',
+                       gaps_col = c(3,12,13,14,16,18,20,21,30,61),
                        annotation_row = otu_annotation_df,
                        annotation_col = col_annotation_df)
-dev.off()
+invisible(dev.off())
 rm(list=ls())
