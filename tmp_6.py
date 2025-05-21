@@ -1,29 +1,25 @@
 from Bio import SeqIO
 
+coral_sample_id_txt = '/Users/songweizhi/Desktop/SMP/coral_sample_with_barcoding_34.txt'
+combined_28S_raw_fa = '/Users/songweizhi/Desktop/SMP/Host_tree_all/combined_28S_raw.fasta'
+combined_COI_raw_fa = '/Users/songweizhi/Desktop/SMP/Host_tree_all/combined_COI_raw.fasta'
 
-metadata_txt_in   = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250322.txt'
-metadata_txt_out  = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250324xxx.txt'
-ncbi_taxonomy_txt = '/Users/songweizhi/DB/taxdump_20250321/ncbi_taxonomy.txt'
+
+coral_sample_set = set()
+for coral_sample in open(coral_sample_id_txt):
+    coral_sample_set.add(coral_sample.strip())
+print(coral_sample_set)
+print(len(coral_sample_set))
 
 
-ncbi_taxonomy_dict = dict()
-for each in open(ncbi_taxonomy_txt):
-    each_split = each.strip().split('\t')
-    ncbi_taxonomy_dict[each_split[0]] = each_split[1]
+for seq in SeqIO.parse(combined_COI_raw_fa, 'fasta'):
+    seq_id = seq.id
+    sample_id = seq_id
+    if '_28S_' in seq_id:
+        sample_id = seq_id.split('_28S_')[0]
+    if '_COI_' in seq_id:
+        sample_id = seq_id.split('_COI_')[0]
 
-metadata_txt_out_handle = open(metadata_txt_out, 'w')
-col_index = dict()
-line_num_index = 0
-for each_line in open(metadata_txt_in):
-    line_num_index += 1
-    line_split = each_line.strip().split('\t')
-    if line_num_index == 1:
-        col_index = {key: i for i, key in enumerate(line_split)}
-        metadata_txt_out_handle.write(each_line)
-    else:
-        sample_id = line_split[col_index['Sample_ID']]
-        tax_by_barcoding = line_split[col_index['Taxonomy_by_Barcoding_NCBI']]
-        tax_lowest = tax_by_barcoding.split(';')[-1]
-        tax_gtdb_format = ncbi_taxonomy_dict.get(tax_lowest, tax_by_barcoding)
-        metadata_txt_out_handle.write('%s\t%s\n' % (each_line.strip(), tax_gtdb_format))
-metadata_txt_out_handle.close()
+    if sample_id not in coral_sample_set:
+        print('>%s' % seq_id)
+        print('%s' % seq.seq)

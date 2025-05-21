@@ -1,12 +1,9 @@
 import os
 import math
-import pandas as pd
-import math
-import os.path
 import random
-import argparse
+import os.path
+import pandas as pd
 import seaborn as sns
-from Cython.Build.Dependencies import join_path
 
 
 def transpose_csv(file_in, file_out, sep_symbol, column_name_pos, row_name_pos):
@@ -220,7 +217,8 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
     output_plot_genus_level                             = '%s/%s_nmds_genus_level.pdf'                              % (op_dir, op_prefix)
 
     otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
-
+    otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')
+    print(otu_table_sample_list)
     # get path to rarefaction_R
     pwd_current_file  = os.path.realpath(__file__)
     current_file_path = '/'.join(pwd_current_file.split('/')[:-1])
@@ -258,7 +256,7 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
         interested_sample_set = otu_table_sample_list
     elif (interested_sample_txt is not None) and (interested_source is None):
         for each_sample in open(interested_sample_txt):
-            interested_sample_set.add(each_sample.strip())
+            interested_sample_set.add(each_sample.strip().split()[0])
     elif (interested_sample_txt is None) and (interested_source is not None):
         interested_source_set = interested_source.split(',')
 
@@ -271,6 +269,9 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
     shared_sample_set, uniq_to_otu_table, uniq_to_interested = get_shared_uniq_elements(otu_table_sample_list, interested_sample_set)
     print('uniq_to_interested')
     print(uniq_to_interested)
+
+    print('BC03_1' in interested_sample_set)
+    print('BC03_1' in otu_table_sample_list)
 
     # read in metadata_txt
     sample_group_dict = dict()
@@ -299,6 +300,7 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
                             if each_rank.startswith(host_taxon_rank):
                                 needed_tax = each_rank
                         sample_group_dict[sample_id] = needed_tax
+
 
     if len(uniq_to_otu_table) > 0:
         print('Samples uniq to %s:' % otu_table_txt)
@@ -356,9 +358,7 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
 
     # transpose otu table
     transpose_csv(table_to_use, otu_table_subset_t, '\t', 0, 0)
-
     rm_low_sum_cols(otu_table_subset_t, 1, otu_table_subset_t_no_0_otu)
-
 
     # get sample group list
     line_index = 0
@@ -374,7 +374,6 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
     color_num = math.ceil(len(set(sample_grp_set))/3)
     color_list = get_color_list(color_num)*999
     shape_list = ['15', '16', '17']*999
-
 
     group_list_test = []
     grp_to_color_dict = dict()
@@ -420,12 +419,10 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
             line_split.insert(1, sample_shape)
             line_split.insert(1, sample_color)
             line_split.insert(1, sample_grp)
-
             str_to_write = '\t'.join(line_split)
             str_to_write = str_to_write.replace('Water', 'water')
             str_to_write = str_to_write.replace('Sediment', 'sediment')
             otu_table_subset_t_meta_handle.write(str_to_write + '\n')
-
         line_index += 1
     otu_table_subset_t_meta_handle.close()
 
@@ -492,8 +489,6 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
 # sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250228.txt'
 # host_taxon_rank         = 'f'
 #
-
-#
 # interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Sponge_Water_Sediment.txt'
 # op_prefix               = 'Sponge_Water_Sediment'
 #
@@ -505,42 +500,49 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
 #
 # interested_group_txt    = '/Users/songweizhi/Desktop/SMP/00_metadata/sample_Coral_Water_Sediment.txt'
 # op_prefix               = 'Coral_Water_Sediment'
-#
-# file out
 
 ########################################################################################################################
 
 # unclassified OTUs will be ignored from this analysis
-
 otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/plot_CC/CC_Coral_Water_Sediment_cof_p_GTDB_20250401_min_pct_1_otu_table_subset.txt'
-sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250408.txt'
-host_taxon_rank         = 'f'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250511.txt'
 otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.GTDB.2.txt'
+otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.GTDB.2_updated_by_blast_vs_nt.txt'
 minimum_seq_num         = 10000
 
 # interested_group_txt    = '/Users/songweizhi/Desktop/SMP/source_Coral_Water_Sediment.txt'
 # sample_to_exclude_txt   = '/Users/songweizhi/Desktop/SMP/Coral_samples_to_ignore.txt'
 # op_prefix               = 'Coral_Water_Sediment_20250401'
-
-otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000_min_pct_1.txt'
-otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000.txt'
+# otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000_min_pct_1.txt'
+# otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000.txt'
 otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000_min_pct_0.1.txt'
+
 
 interested_source       = None
 sample_to_exclude_txt   = None
 interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/coral_sample_with_barcoding_30_with_Water_Sediment_69.txt'
 op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
-op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69'
 
-
-# coral + Hydrozoa
-interested_source       = None
-sample_to_exclude_txt   = None
 host_taxon_rank         = 'f'
-interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/coral_sample_with_barcoding_30_with_Water_Sediment_69_plus_4_Hydrozoa.txt'
-op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
-op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_plus_4_Hydrozoa'
+op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_family_level'
 
+host_taxon_rank         = 'g'
+op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_genus_level'
+
+
+########################################################################################################################
+
+# sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250415.txt'
+# otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB_20250503/s07_AllSamples_unoise_otu_table_noEU_n10_pct10_min10000_min_pct_1.txt'
+# otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB_20250503/s08_AllSamples_unoise_nc.blca.2.txt'
+#
+# # coral + Hydrozoa
+# interested_source       = None
+# sample_to_exclude_txt   = None
+# host_taxon_rank         = 'g'
+# interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB_20250503/metadata_20250415_green_102.txt'
+# op_dir                  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB_20250503/NMDS_Sponge_102'
+# op_prefix               = 'Sponge_102'
 
 ########################################################################################################################
 

@@ -57,6 +57,28 @@ fa_out              = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/COI_ZVF0BP0
 
 ########################################################################################################################
 
+# file in
+barcoding_fa        = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge.fa'
+ref_seq_fa          = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_1C66UACS013-Alignment_formatted_ref_accession/combined.fasta'
+
+# file out
+blast_op            = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_1C66UACS013-Alignment_formatted_ref_accession/barcoding_vs_ref_blastn.txt'
+blast_op_best_hit   = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_1C66UACS013-Alignment_formatted_ref_accession/barcoding_vs_ref_blastn_best_hit.txt'
+fa_out              = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_1C66UACS013-Alignment_formatted_ref_accession/accession_sequence_matched_region.fa'
+
+########################################################################################################################
+
+# file in
+barcoding_fa        = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_28S_no_coral.fa'
+ref_seq_fa          = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_28S_no_coral_1CAFG3F8013-Alignment_formatted_ref_accession/combined.fasta'
+
+# file out
+blast_op            = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_28S_no_coral_1CAFG3F8013-Alignment_formatted_ref_accession/barcoding_vs_ref_blastn.txt'
+blast_op_best_hit   = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_28S_no_coral_1CAFG3F8013-Alignment_formatted_ref_accession/barcoding_vs_ref_blastn_best_hit.txt'
+fa_out              = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_28S_no_coral_1CAFG3F8013-Alignment_formatted_ref_accession/accession_sequence_matched_region.fa'
+
+########################################################################################################################
+
 seq_dict = dict()
 for each_seq in SeqIO.parse(ref_seq_fa, 'fasta'):
     seq_dict[each_seq.id] = str(each_seq.seq)

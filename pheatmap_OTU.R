@@ -36,8 +36,9 @@ my_heatmap <- pheatmap(otu_df,
                        cluster_rows=FALSE, # cutree_rows = 2,
                        cluster_cols=FALSE, # cutree_cols = 10,
                        # gaps_row = '',
-                       gaps_col = c(3,12,13,14,16,18,20,21,30,61),
-                       annotation_row = otu_annotation_df,
-                       annotation_col = col_annotation_df)
+                       gaps_col = c(9,12,13,15,16,18,20,21,30,61),
+                       #annotation_row = otu_annotation_df,
+                       #annotation_col = col_annotation_df
+                       )
 invisible(dev.off())
 rm(list=ls())

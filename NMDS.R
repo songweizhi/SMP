@@ -9,6 +9,7 @@ library(ggplot2)
 library(ggalt)
 library(ggforce)
 library(concaveman)
+library(plyr)
 
 ################################################################################
 
@@ -42,13 +43,16 @@ shape_uniq = unique(df_in$Shape)
 
 grp_uniq = unique(df_in$Group)
 
-p = ggplot(MDS_xy, aes(MDS1, MDS2, color=Group)) + #
+chulls <- ddply(MDS_xy, .(Group), function(MDS_xy) MDS_xy[chull(MDS_xy$MDS1, MDS_xy$MDS2), ])
+
+
+p = ggplot(MDS_xy, aes(MDS1, MDS2, color=Group)) +
+  labs(x = "NMDS1", y = "NMDS2") +
   annotate("text", x = max(MDS_xy$MDS1), y = min(MDS_xy$MDS2), label = paste("Stress: ", stress_value), hjust = 1, vjust = 0, size = 5, color = "black") +
   geom_point() +
   # geom_point(aes(shape = Group, color = Group), size =1.5) +
   # scale_shape_manual(values = c(15, 16, 17, 15, 16, 17, 15, 16, 17, 3, 8)) +
   # scale_color_manual(values = c("#959595", "#9f399f", "#3787c0", "#ffb939", "#959595", "#9f399f", "#3787c0", "#ffb939", "#959595", "black", "black")) +
-
   #geom_point(aes(shape = c(15, 16, 17, 15, 16, 17, 15, 16, 17, 3, 8), color = c("#959595", "#9f399f", "#3787c0", "#ffb939", "#959595", "#9f399f", "#3787c0", "#ffb939", "#959595", "black", "black")), size = 1.5) +
   #geom_point(aes(shape = c(15, 16, 17, 15, 16, 17, 15, 16, 17, 3, 8), color = Group), size = 1.5) +
   #scale_shape_manual(values = c(15, 16, 17, 15, 16, 17, 15, 16, 17, 3, 8)) +
@@ -56,7 +60,13 @@ p = ggplot(MDS_xy, aes(MDS1, MDS2, color=Group)) + #
   #scale_color_manual(values = color_uniq) +
   #print(MDS_xy$Group)
   # geom_mark_hull(concavity = 5,expand=0,radius=0,aes(fill=Group)) +   # good
-  geom_mark_ellipse(expand=0, linewidth=0, aes(fill=Group))+            # very good
+  # geom_mark_polygon(expand=0, linewidth=0, aes(fill=Group))+            # very good !!!
+  # geom_polygon(aes(fill = value, group = id, subgroup = subid)) +
+  # geom_polygon(aes(fill=Group, group=Group, alpha=0.1, rule="winding")) +
+  # geom_encircle(aes(fill=Group)）+
+  # geom_polygon(data=chulls, linewidth=0.5, linetype="dashed", fill=Group, alpha=0.3, aes(fill = Group, group=Group)) +
+  geom_polygon(data=chulls, linewidth=0.5, alpha=0.3, aes(fill = Group, group=Group)) +
+
   #geom_mark_ellipse(expand=0, linetype=1, linewidth=0.3, aes(fill=Group))+            # very good
   # stat_ellipse(level=0.95, linetype=2, lwd=0.3) +
   # stat_ellipse(geom = "polygon", aes(fill = Group), alpha = 0.2) +
@@ -72,8 +82,6 @@ p = ggplot(MDS_xy, aes(MDS1, MDS2, color=Group)) + #
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     legend.title=element_text(size=10, face = "plain",color = 'black'),
-    legend.text = element_text(size=10, face = "plain",color = 'black')
-  )
+    legend.text = element_text(size=10, face = "plain",color = 'black'))
 
 ggsave(filename=output_plot, plot = p, device = cairo_pdf, width =180, height =120, units = "mm")
-  

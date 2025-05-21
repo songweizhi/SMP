@@ -1,91 +1,88 @@
-from Bio import SeqIO
+import os
+import math
+import math
+import os.path
+import random
+import argparse
+import pandas as pd
+import seaborn as sns
 
 
-metadata_txt                = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250319.txt'
-barcoding_by_28S_txt        = '/Users/songweizhi/Desktop/SMP/Host_barcoding/barcoding_by_28S.txt'
-barcoding_by_COI_txt        = '/Users/songweizhi/Desktop/SMP/Host_barcoding/barcoding_by_COI.txt'
-ncbi_tax_by_barcoding_txt   = '/Users/songweizhi/Desktop/SMP/Host_barcoding/ncbi_tax_by_barcoding.txt'
-metadata_txt_new            = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250323.txt'
+def transpose_csv(file_in, file_out, sep_symbol, column_name_pos, row_name_pos):
 
-barcoding_by_both_set = set()
-barcoding_by_28S_set = set()
-for each in open(barcoding_by_28S_txt):
-    barcoding_by_28S_set.add(each.strip())
-    barcoding_by_both_set.add(each.strip())
-
-barcoding_by_COI_set = set()
-for each in open(barcoding_by_COI_txt):
-    barcoding_by_COI_set.add(each.strip())
-    barcoding_by_both_set.add(each.strip())
-
-barcoding_dict = dict()
-iden_dict = dict()
-for each in open(ncbi_tax_by_barcoding_txt):
-    each_split = each.strip().split('\t')
-    sample_id = each_split[0]
-    tax = each_split[1]
-    tax_str = tax
-    iden = 'na'
-    if '(' in tax:
-        tax_str = tax.split('(')[0]
-        iden = tax.split('(')[1][:-1]
-    barcoding_dict[sample_id] = tax_str
-    iden_dict[sample_id] = iden
+    csv = pd.read_csv(file_in, sep=sep_symbol, header=column_name_pos, index_col=row_name_pos)
+    df_csv = pd.DataFrame(data=csv)
+    transposed_csv = df_csv.T
+    transposed_csv.to_csv(file_out, sep=sep_symbol)
 
 
-barcoded_sample_set = set()
+########################################################################################################################
 
-metadata_txt_new_handle = open(metadata_txt_new, 'w')
-# read in metadata_txt
-sample_group_dict = dict()
-col_index = dict()
-line_num_index = 0
-for each_line in open(metadata_txt):
-    line_num_index += 1
-    line_split = each_line.strip().split('\t')
-    if line_num_index == 1:
-        col_index = {key: i for i, key in enumerate(line_split)}
-        metadata_txt_new_handle.write(each_line)
+# file in
+otu_table_txt       = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_n10_pct10_min20000.txt'
+sample_txt          = '/Users/songweizhi/Desktop/10.txt'
+classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.GTDB.2.txt'
+otu_table_txt_t     = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_n10_pct10_min20000_T.txt'
+
+########################################################################################################################
+
+otu_tax_dict = dict()
+for otu_tax in open(classification_txt):
+    otu_tax_split = otu_tax.strip().split('\t')
+    otu_id = otu_tax_split[0]
+    tax_str = otu_tax_split[1]
+    otu_tax_dict[otu_id] = tax_str
+
+transpose_csv(otu_table_txt, otu_table_txt_t, '\t', 0, 0)
+
+interested_sample_set = set()
+for sample in open(sample_txt):
+    interested_sample_set.add(sample.strip())
+print(interested_sample_set)
+
+
+print('Sample\tzotu1\tzotu27\tzotu28')
+col_header_list = []
+line_index = 0
+for line in open(otu_table_txt_t):
+    line_split = line.strip().split('\t')
+    if line_index == 0:
+        col_header_list = line_split
     else:
-        sample_id = line_split[col_index['Sample_ID']]
+        sample_id = line_split[0]
+        otu_count_list = line_split[1:]
+        if sample_id in interested_sample_set:
+            otu_count_dict = dict()
+            for (otu_id, otu_count) in zip(col_header_list, otu_count_list):
+                if int(otu_count) != 0:
+                    otu_count_dict[otu_id] = int(otu_count)
 
-        barcoding_gene = 'na'
-        if sample_id in barcoding_by_28S_set:
-            barcoding_gene = '28S'
-        elif sample_id in barcoding_by_COI_set:
-            barcoding_gene = 'COI'
+            total_ar_count = 0
+            for each_otu in sorted(list(otu_count_dict.keys())):
+                otu_tax = otu_tax_dict[each_otu]
+                otu_count = otu_count_dict[each_otu]
+                if 'd__Archaea' in otu_tax:
+                    total_ar_count += otu_count
+                    #print(each_otu, otu_count, otu_tax)
 
-        tax_by_barcoding = barcoding_dict.get(sample_id, 'na')
-        identity = iden_dict.get(sample_id, 'na')
+            zotu1_count = otu_count_dict.get('Zotu1', 0)
+            zotu27_count = otu_count_dict.get('Zotu27', 0)
+            zotu28_count = otu_count_dict.get('Zotu28', 0)
 
-        if tax_by_barcoding != 'na':
-            barcoded_sample_set.add(sample_id)
+            zotu1_pct = float("{0:.2f}".format(zotu1_count*100/total_ar_count))
+            zotu27_pct = float("{0:.2f}".format(zotu27_count*100/total_ar_count))
+            zotu28_pct = float("{0:.2f}".format(zotu28_count*100/total_ar_count))
 
-        metadata_txt_new_handle.write('%s\t%s\t%s\t%s\n' % (each_line.strip(), barcoding_gene, tax_by_barcoding , identity))
+            print('%s\tZotu1\t%s/%s\t%s'  % (sample_id, zotu1_count,  total_ar_count, zotu1_pct))
+            print('%s\tZotu27\t%s/%s\t%s' % (sample_id, zotu27_count, total_ar_count, zotu27_pct))
+            print('%s\tZotu28\t%s/%s\t%s' % (sample_id, zotu28_count, total_ar_count, zotu28_pct))
+            print('%s\t%s\t%s\t%s' % (sample_id, zotu1_pct, zotu27_pct, zotu28_pct))
 
-metadata_txt_new_handle.close()
-
-
-
-
-def get_shared_uniq_elements(list_1, list_2):
-    shared_set = set(list_1).intersection(list_2)
-    list_1_uniq = []
-    for e1 in list_1:
-        if e1 not in shared_set:
-            list_1_uniq.append(e1)
-    list_2_uniq = []
-    for e2 in list_2:
-        if e2 not in shared_set:
-            list_2_uniq.append(e2)
-    return shared_set, list_1_uniq, list_2_uniq
+            print()
 
 
+    line_index += 1
 
 
-shared_set, list_1_uniq, list_2_uniq = get_shared_uniq_elements(barcoding_by_both_set, barcoded_sample_set)
 
 
-print(shared_set)
-print(list_1_uniq)
-print(list_2_uniq)

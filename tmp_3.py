@@ -1,53 +1,17 @@
-from Bio import SeqIO
 
+unclassify_otu_txt = '/Users/songweizhi/Desktop/un.txt'
 
-# fa_28s          = '/Users/songweizhi/Desktop/28S.fa'
-# fa_28s_renamed  = '/Users/songweizhi/Desktop/28S_renamed.fa'
+blast_op_subset    = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB_20250325/s06_AllSamples_unoise_nc_vs_nt_unclassified.txt'
 
-# fa_coi          = '/Users/songweizhi/Desktop/COI.fa'
-# fa_coi_renamed  = '/Users/songweizhi/Desktop/COI_renamed.fa'
+unclassify_otu_set = set()
+for each in open(unclassify_otu_txt):
+    unclassify_otu_set.add(each.strip())
+print(unclassify_otu_set)
+print(len(unclassify_otu_set))
 
-
-# fa_28s_renamed_handle = open(fa_28s_renamed, 'w')
-# for each in SeqIO.parse(fa_28s, 'fasta'):
-#     seq_id = '_'.join(each.id.split('-')[3:])
-#     fa_28s_renamed_handle.write('>%s\n' % seq_id)
-#     fa_28s_renamed_handle.write('%s\n' % str(each.seq))
-# fa_28s_renamed_handle.close()
-
-
-# fa_coi_renamed_handle = open(fa_coi_renamed, 'w')
-# for each in SeqIO.parse(fa_coi, 'fasta'):
-#     seq_id = '_'.join(each.id.split('-')[3:])
-#     seq_str = str(each.seq)
-#     fa_coi_renamed_handle.write('>%s\n' % seq_id)
-#     fa_coi_renamed_handle.write('%s\n' % seq_str)
-# fa_coi_renamed_handle.close()
-
-
-fa_28s          = '/Users/songweizhi/Desktop/SMP/Host_barcoding/28S.fa'
-fa_28s_cropped  = '/Users/songweizhi/Desktop/SMP/Host_barcoding/28S_crop.fa'
-
-fa_coi          = '/Users/songweizhi/Desktop/SMP/Host_barcoding/COI_checked_rc.fa'
-fa_coi_cropped  = '/Users/songweizhi/Desktop/SMP/Host_barcoding/COI_crop.fa'
-
-
-
-
-fa_coi_cropped_handle = open(fa_coi_cropped, 'w')
-for each in SeqIO.parse(fa_coi, 'fasta'):
-    seq_str = str(each.seq)
-    seq_str_cropped = seq_str[20:-20]
-    fa_coi_cropped_handle.write('>%s\n' % each.id)
-    fa_coi_cropped_handle.write('%s\n' % seq_str_cropped)
-fa_coi_cropped_handle.close()
-
-
-fa_28s_cropped_handle = open(fa_28s_cropped, 'w')
-for each in SeqIO.parse(fa_28s, 'fasta'):
-    seq_str = str(each.seq)
-    seq_str_cropped = seq_str[20:-20]
-    fa_28s_cropped_handle.write('>%s\n' % each.id)
-    fa_28s_cropped_handle.write('%s\n' % seq_str_cropped)
-fa_28s_cropped_handle.close()
-
+blast_op_subset_handle = open(blast_op_subset, 'w')
+for each_line in open('/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB_20250325/s06_AllSamples_unoise_nc_vs_nt.txt'):
+    q_id = each_line.strip().split('\t')[0]
+    if q_id in unclassify_otu_set:
+        blast_op_subset_handle.write(each_line)
+blast_op_subset_handle.close()

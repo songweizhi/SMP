@@ -136,7 +136,7 @@ def community_composition(args):
         interested_sample_set = otu_table_sample_list
     elif (interested_sample_txt is not None) and (interested_source is None):
         for each_sample in open(interested_sample_txt):
-            interested_sample_set.add(each_sample.strip())
+            interested_sample_set.add(each_sample.strip().split()[0])
     elif (interested_sample_txt is None) and (interested_source is not None):
         interested_source_set = interested_source.split(',')
 
@@ -217,7 +217,7 @@ def community_composition(args):
     tax_table_df = otu_table_df.groupby('Taxon', as_index=False).sum()
     tax_table_df_normalized = tax_table_df.copy()
     tax_table_df_normalized.iloc[:, 1:] = tax_table_df.iloc[:, 1:].div(tax_table_df.iloc[:, 1:].sum())
-    tax_table_df_normalized_rounded = tax_table_df_normalized.round(3)
+    tax_table_df_normalized_rounded = tax_table_df_normalized.round(4)
     tax_table_df_normalized_rounded.set_index('Taxon', inplace=True)
     tax_table_df_normalized_rounded_no_zero  = tax_table_df_normalized_rounded[tax_table_df_normalized_rounded.sum(axis=1) != 0]
     tax_table_df_normalized_rounded_no_zero.to_csv(tax_table_txt, sep='\t', header=True, index=True)
