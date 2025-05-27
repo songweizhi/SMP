@@ -1,16 +1,6 @@
 import os
 import glob
 from Bio import SeqIO
-########################################################################################################################
-
-metadata_txt            = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250415.txt'
-ref_tax_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/COI_ZVF0BP0R016-Alignment_reformatted_ref_accession/accession_organism.txt'
-voucher_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/COI_ZVF0BP0R016-Alignment_reformatted_ref_accession/accession_voucher.txt'
-tax_ranks               = 'sc,o,f,g,s'
-
-marker_id               = 'COI'
-aln_file                = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/combined_%s_Coral_with_refs_gblocks.aln'           % marker_id
-itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/iTOL_colored_Label_Coral_taxa_%s_with_refs.txt'    % marker_id
 
 ########################################################################################################################
 
@@ -20,6 +10,17 @@ voucher_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/28S_ZPV
 tax_ranks               = 'sc,o,f,g,s'
 
 marker_id               = '28S'
+aln_file                = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/combined_%s_Coral_with_refs_gblocks.aln'           % marker_id
+itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/iTOL_colored_Label_Coral_taxa_%s_with_refs.txt'    % marker_id
+
+########################################################################################################################
+
+metadata_txt            = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250415.txt'
+ref_tax_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/COI_ZVF0BP0R016-Alignment_reformatted_ref_accession/accession_organism.txt'
+voucher_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/COI_ZVF0BP0R016-Alignment_reformatted_ref_accession/accession_voucher.txt'
+tax_ranks               = 'sc,o,f,g,s'
+
+marker_id               = 'COI'
 aln_file                = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/combined_%s_Coral_with_refs_gblocks.aln'           % marker_id
 itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/iTOL_colored_Label_Coral_taxa_%s_with_refs.txt'    % marker_id
 
