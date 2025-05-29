@@ -81,7 +81,7 @@ rare1 <- map_dfr(grouping_df$SampleID, function(x){
 
 message("running ggplot()")
 p <- ggplot(data = rare1)+
-  geom_line(aes(x = raw.read, y = OTU, group = sample, color = SampleGroup),linewidth =0.1)+ # color="black",, linetype=Compartment
+  geom_line(aes(x = raw.read, y = OTU, group = sample, color = SampleGroup),linewidth =0.15)+ # color="black",, linetype=Compartment
   theme_bw() + theme(
     axis.ticks.length = unit(0.1, "cm"),
     axis.ticks.x = element_line(linewidth =0.2, color = 'black'),

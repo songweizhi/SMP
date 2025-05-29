@@ -26,8 +26,21 @@ itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/iTOL_co
 
 ########################################################################################################################
 
+metadata_txt            = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
+ref_tax_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_with_amplicon-3D4ZBUK7016-Alignment_formatted_ref_accession/accession_organism.txt'
+voucher_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_with_amplicon-3D4ZBUK7016-Alignment_formatted_ref_accession/accession_voucher.txt'
+tax_ranks               = 'c,sc,o,f,g,s'
+
+marker_id               = 'COI'
+aln_file                = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_plus_ref_gblocks.aln'
+itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/iTOL_ColoredLabel_Sponge_%s_taxa.txt'    % marker_id
+
+########################################################################################################################
+
 interested_tax_rank_list = tax_ranks.split(',')
 
+jl_fauna_set = set()
+fauna_tax_dict = dict()
 jl_sample_set = set()
 sample_tax_dict = dict()
 col_index = dict()
@@ -39,6 +52,7 @@ for each_line in open(metadata_txt):
         col_index = {key: i for i, key in enumerate(line_split)}
     else:
         sample_id  = line_split[col_index['Sample_ID']]
+        fauna_id  = line_split[col_index['Fauna_ID']]
         sample_tax = line_split[col_index['Host_Taxonomy_NCBI']]
 
         sample_tax_interested = sample_tax
@@ -53,7 +67,9 @@ for each_line in open(metadata_txt):
             sample_tax_interested = ';'.join(sample_tax_list)
 
         sample_tax_dict[sample_id] = sample_tax_interested
+        fauna_tax_dict[fauna_id] = sample_tax_interested
         jl_sample_set.add(sample_id)
+        jl_fauna_set.add(fauna_id)
 
 ref_set = set()
 for each_line in open(ref_tax_txt):
@@ -100,11 +116,18 @@ for sequence in SeqIO.parse(aln_file, 'fasta'):
         gnm_id = seq_id.split('_COI_')[0]
     elif '_28S_' in seq_id:
         gnm_id = seq_id.split('_28S_')[0]
-    gnm_tax = sample_tax_dict.get(gnm_id, gnm_id)
+
+    if gnm_id in sample_tax_dict:
+        gnm_tax = sample_tax_dict[gnm_id]
+    elif gnm_id in fauna_tax_dict:
+        gnm_tax = fauna_tax_dict[gnm_id]
+    else:
+        gnm_tax = gnm_id
+
     sample_color = '#000000'
     if seq_id in voucher_set:
         sample_color = '#FF0000'
-    elif gnm_id in jl_sample_set:
+    elif (gnm_id in jl_sample_set) or (gnm_id in jl_fauna_set):
         sample_color = '#00FF00'
 
     if seq_id in ref_set:
@@ -115,3 +138,4 @@ for sequence in SeqIO.parse(aln_file, 'fasta'):
     itol_colored_label_txt_handle.write('%s\t-1\t%s\tnormal\t1\t0\n' % (str_to_write, sample_color))
     gnm_tax_split = gnm_tax.split(';')
 itol_colored_label_txt_handle.close()
+

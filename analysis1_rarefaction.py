@@ -60,10 +60,10 @@ def rarefaction(otu_table_txt, metadata_txt, color_code_txt, interested_sample_t
         exit()
 
     # define file name
-    otu_table_subset    = '%s/%s_otu_table_subset.txt' % (op_dir, op_prefix)
-    grouping_txt        = '%s/%s_grouping.txt'         % (op_dir, op_prefix)
-    group_color_txt     = '%s/%s_color.txt'            % (op_dir, op_prefix)
-    output_plot         = '%s/%s_rarefaction.pdf'      % (op_dir, op_prefix)
+    otu_table_subset = '%s/%s_otu_table_subset.txt' % (op_dir, op_prefix)
+    grouping_txt     = '%s/%s_grouping.txt'         % (op_dir, op_prefix)
+    group_color_txt  = '%s/%s_color.txt'            % (op_dir, op_prefix)
+    output_plot      = '%s/%s_rarefaction.pdf'      % (op_dir, op_prefix)
 
     otu_table_sample_list = open(otu_table_txt).readline().strip().split('\t')[1:]
 
@@ -87,13 +87,11 @@ def rarefaction(otu_table_txt, metadata_txt, color_code_txt, interested_sample_t
         interested_sample_set = otu_table_sample_list
     elif (interested_sample_txt is not None) and (interested_group_txt is None):
         for each_sample in open(interested_sample_txt):
-            interested_sample_set.add(each_sample.strip())
+            interested_sample_set.add(each_sample.strip().split()[0])
     elif (interested_sample_txt is None) and (interested_group_txt is not None):
-
         interested_group_set = set()
         for each_grp in open(interested_group_txt):
             interested_group_set.add(each_grp.strip())
-
         for each_sample in sample_source_dict:
             sample_source = sample_source_dict[each_sample]
             if sample_source in interested_group_set:
@@ -140,36 +138,36 @@ def rarefaction(otu_table_txt, metadata_txt, color_code_txt, interested_sample_t
     rarefaction_cmd = 'Rscript %s -i %s -g %s -c %s -o %s' % (rarefaction_R, otu_table_to_plot, grouping_txt, group_color_txt, output_plot)
     print(rarefaction_cmd)
     os.system(rarefaction_cmd)
-
     print('Done')
 
 
-########################################################################################################################
+######################################################### Coral ########################################################
 
 # file in
 otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_n10_pct10_min20000.txt'
 sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250403.txt'
+interested_group_txt    = None
 color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type.txt'
 default_color           = '#999999'
+interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/coral_sample_with_bcarcoding_35_with_Water_Sediment_74.txt'
+
 # file out
 op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_1_Rarefaction'
-
-
-interested_group_txt    = None
-interested_sample_txt   = '/Users/songweizhi/Desktop/4_resequence.txt'
-op_prefix               = '4_resequence'
-
-
-color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type.txt'
-interested_sample_txt   = None
-interested_group_txt    = '/Users/songweizhi/Desktop/SMP/source_Sponge_Coral_Water_Sediment.txt'
-op_prefix               = 'Sponge_Coral_Water_Sediment'
-
-
-color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type.txt'
-interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/coral_sample_with_bcarcoding_35_with_Water_Sediment_74.txt'
-interested_group_txt    = None
 op_prefix               = 'Coral_Water_Sediment_74'
+
+######################################################## Sponge ########################################################
+
+# file in
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_356/s07_AllSamples_unoise_otu_table_noEU_min10000.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
+color_code_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/color_code_sample_type.txt'
+default_color           = '#999999'
+interested_group_txt    = None
+interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/Sponge_samples_20250524.txt'
+
+# file out
+op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_1_Rarefaction'
+op_prefix               = 'Sponge_Water_Sediment_113'
 
 ########################################################################################################################
 

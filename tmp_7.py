@@ -1,106 +1,62 @@
 import os
 import glob
 from Bio import SeqIO
-from MarkerMAG.matam_16s import str_to_num_list
-
-########################################################################################################################
-
-metadata_txt            = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250408.txt'
-samples_to_ignore_txt   = '/Users/songweizhi/Desktop/SMP/Coral_samples_to_ignore_51_Shan.txt'
-samples_to_ignore_txt   = '/Users/songweizhi/Desktop/SMP/Coral_samples_to_ignore_66.txt'
-sample_txt              = '/Users/songweizhi/Desktop/SMP/coral_sample_with_barcoding_30_with_Water_Sediment_69.txt'
-amplicon_dir            = '/Users/songweizhi/Desktop/SMP/01_fna_files'
-amplicon_ext            = 'fna'
-ref_tax_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/28S_ZPVK91YC016-Alignment_reformatted_ref_taxon.txt'
-ref_tax_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/COI_ZVF0BP0R016-Alignment_reformatted_ref_accession/accession_organism.txt'
-
-marker_id               = '28S'
-marker_id               = 'COI'
-aln_file                = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/combined_%s_Coral_gblocks.aln'                     % marker_id
-aln_file                = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/combined_%s_Coral_with_refs_gblocks.aln'           % marker_id
-itol_label_txt          = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/iTOL_Label_Coral_taxa_%s_with_refs.txt'            % marker_id
-itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/iTOL_colored_Label_Coral_taxa_%s_with_refs.txt'    % marker_id
-
-########################################################################################################################
-
-amplicon_file_re = '%s/*.%s' % (amplicon_dir, amplicon_ext)
-amplicon_file_list = [os.path.basename(i) for i in glob.glob(amplicon_file_re)]
-amplicon_id_list = ['.'.join(i.split('.')[:-1]) for  i in amplicon_file_list]
-
-to_ignore_sample_set = set()
-for sample in open(samples_to_ignore_txt):
-    to_ignore_sample_set.add(sample.strip().split()[0])
-
-sample_set = set()
-for sample in open(sample_txt):
-    sample_set.add(sample.strip())
-
-sample_depth_dict = dict()
-sample_tax_dict = dict()
-sample_source_dict = dict()
-col_index = dict()
-line_num_index = 0
-for each_line in open(metadata_txt):
-    line_num_index += 1
-    line_split = each_line.strip().split('\t')
-    if line_num_index == 1:
-        col_index = {key: i for i, key in enumerate(line_split)}
-    else:
-        sample_id  = line_split[col_index['Sample_ID']]
-        sample_tax = line_split[col_index['Host_Taxonomy_NCBI']]
-        sample_tax_dict[sample_id] = sample_tax
-        sample_source = line_split[col_index['Source']]
-        sample_depth = line_split[col_index['Collect_Depth']]
-        sample_source_dict[sample_id] = sample_source
-        sample_depth_dict[sample_id] = sample_depth
-
-for each_line in open(ref_tax_txt):
-    line_split = each_line.strip().split('\t')
-    sample_tax_dict[line_split[0]] = line_split[1]
 
 
-longest_gnm_id = 0
-longest_tax = 0
-for sequence in SeqIO.parse(aln_file, 'fasta'):
-    seq_id = sequence.id
-    gnm_id = seq_id
-    if '_COI_' in seq_id:
-        gnm_id = seq_id.split('_COI_')[0]
-    elif '_28S_' in seq_id:
-        gnm_id = seq_id.split('_28S_')[0]
-    if len(gnm_id) > longest_gnm_id:
-        longest_gnm_id = len(gnm_id)
+def get_shared_uniq_elements(list_1, list_2):
+    shared_set = set(list_1).intersection(list_2)
+    list_1_uniq = []
+    for e1 in list_1:
+        if e1 not in shared_set:
+            list_1_uniq.append(e1)
+    list_2_uniq = []
+    for e2 in list_2:
+        if e2 not in shared_set:
+            list_2_uniq.append(e2)
+    return shared_set, list_1_uniq, list_2_uniq
 
-    gnm_tax = sample_tax_dict.get(gnm_id, gnm_id)
-    print(gnm_tax)
-    if len(gnm_tax) > longest_tax:
-        longest_tax = len(gnm_tax)
+
+# file_list1 = [os.path.basename(i) for i in glob.glob('/Users/songweizhi/Desktop/SMP/01_fna_files_DY86II_328/*.fna')]
+# file_list2 = [os.path.basename(i) for i in glob.glob('/Users/songweizhi/Desktop/SMP/01_fna_files_DY86II_328_new/*.fna')]
+# shared_set, list_1_uniq, list_2_uniq = get_shared_uniq_elements(file_list1, file_list2)
+# print(sorted(list_1_uniq))
+# print(sorted(list_2_uniq))
+
+
+# file_to_path_dict = dict()
+# for each in open('/Users/songweizhi/Desktop/files.txt'):
+#     each_split = each.strip().split('/')
+#     file_name  = each_split[-1]
+#
+#     if file_name not in file_to_path_dict:
+#         file_to_path_dict[file_name] = []
+#     file_to_path_dict[file_name].append(each.strip())
+
+
+# print(len(file_to_path_dict))
+# for each in file_to_path_dict:
+#     if len(file_to_path_dict[each]) > 1:
+#         for file in file_to_path_dict[each]:
+#             j_num = file.split('/')[0].split('-')[-1]
+#             file_name_new = '%s_%s.fna' % (file.split('/')[-1][:-4], j_num)
+#             print('cp %s.gz %s.gz' % (file, file_name_new))
+
+
+fa_1        = '/Users/songweizhi/Desktop/SMP/01_fna_files_duplicated/JL315_B01_4A_J006.fna'
+fa_2        = '/Users/songweizhi/Desktop/SMP/01_fna_files_duplicated/JL315_B01_4A_J016.fna'
+fa_combined = '/Users/songweizhi/Desktop/SMP/01_fna_files_duplicated/JL315_B01_4A.fna'
+prefix      =                                                       'JL315_B01_4A'
 
 
 
-handle = open(itol_label_txt, 'w')
-handle.write('LABELS\nSEPARATOR TAB\nDATA\n')
-for sequence in SeqIO.parse(aln_file, 'fasta'):
-    seq_id = sequence.id
-    gnm_id = seq_id
-    if '_COI_' in seq_id:
-        gnm_id = seq_id.split('_COI_')[0]
-    elif '_28S_' in seq_id:
-        gnm_id = seq_id.split('_28S_')[0]
-    gnm_tax = sample_tax_dict.get(gnm_id, gnm_id)
-    #print('%s\t%s%s__%s' % (seq_id, gnm_tax, '_'*(longest_tax-len(gnm_tax)), seq_id))
-
-    gnm_source = sample_source_dict.get(gnm_id, gnm_id)
-
-    str_to_write = '%s\t%s%s__%s' % (seq_id, gnm_tax, '_'*(longest_tax-len(gnm_tax)), seq_id.split('_%s_' % marker_id)[0])
-    str_to_write = str_to_write.replace('d__Eukaryota;k__Metazoa;p__Cnidaria;c__Anthozoa;', '')
-    str_to_write = str_to_write.replace('d__Eukaryota;k__Metazoa;p__Cnidaria;c__Hydrozoa;o__;f__;g__;s__', 'c__Hydrozoa')
-    handle.write(str_to_write + '\n')
-
-    gnm_tax_split = gnm_tax.split(';')
-    #print('%s\t%s' % (seq_id, '\t'.join(gnm_tax_split)))
-
-handle.close()
-
-
-
+fa_combined_handle = open(fa_combined, 'w')
+seq_index = 1
+for seq in SeqIO.parse(fa_1, 'fasta'):
+    fa_combined_handle.write('>%s_%s\n' % (prefix, seq_index))
+    fa_combined_handle.write('%s\n' % seq.seq)
+    seq_index += 1
+for seq in SeqIO.parse(fa_2, 'fasta'):
+    fa_combined_handle.write('>%s_%s\n'% (prefix, seq_index))
+    fa_combined_handle.write('%s\n'% seq.seq)
+    seq_index += 1
+fa_combined_handle.close()
