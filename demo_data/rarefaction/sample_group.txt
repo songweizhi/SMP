@@ -1,3 +1,0 @@
-SampleID	SampleGroup
-JL304_B12_1A	Sponge
-JL315_B01_4A	Coral
