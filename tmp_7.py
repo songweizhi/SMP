@@ -1,5 +1,3 @@
-import os
-import glob
 from Bio import SeqIO
 
 
@@ -16,47 +14,21 @@ def get_shared_uniq_elements(list_1, list_2):
     return shared_set, list_1_uniq, list_2_uniq
 
 
-# file_list1 = [os.path.basename(i) for i in glob.glob('/Users/songweizhi/Desktop/SMP/01_fna_files_DY86II_328/*.fna')]
-# file_list2 = [os.path.basename(i) for i in glob.glob('/Users/songweizhi/Desktop/SMP/01_fna_files_DY86II_328_new/*.fna')]
-# shared_set, list_1_uniq, list_2_uniq = get_shared_uniq_elements(file_list1, file_list2)
-# print(sorted(list_1_uniq))
-# print(sorted(list_2_uniq))
+set_with_seq = set()
+for each_seq in SeqIO.parse('/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_with_amplicon.fa', 'fasta'):
+    seq_id = each_seq.id
+    if '_COI_' in seq_id:
+        seq_id = seq_id.split('_COI_')[0]
+    set_with_seq.add(seq_id)
 
+set_45 = set()
+for each in open('/Users/songweizhi/Desktop/45.txt'):
+    bin_id = each.strip().split()[0]
+    set_45.add(bin_id)
+print(len(set_45))
 
-# file_to_path_dict = dict()
-# for each in open('/Users/songweizhi/Desktop/files.txt'):
-#     each_split = each.strip().split('/')
-#     file_name  = each_split[-1]
-#
-#     if file_name not in file_to_path_dict:
-#         file_to_path_dict[file_name] = []
-#     file_to_path_dict[file_name].append(each.strip())
+shared_set, set_45_uniq, set_with_seq_uniq = get_shared_uniq_elements(set_45, set_with_seq)
+print(len(shared_set), shared_set)
+print(len(set_45_uniq), sorted(list(set_45_uniq)))
+print(len(set_with_seq_uniq), sorted(list(set_with_seq_uniq)))
 
-
-# print(len(file_to_path_dict))
-# for each in file_to_path_dict:
-#     if len(file_to_path_dict[each]) > 1:
-#         for file in file_to_path_dict[each]:
-#             j_num = file.split('/')[0].split('-')[-1]
-#             file_name_new = '%s_%s.fna' % (file.split('/')[-1][:-4], j_num)
-#             print('cp %s.gz %s.gz' % (file, file_name_new))
-
-
-fa_1        = '/Users/songweizhi/Desktop/SMP/01_fna_files_duplicated/JL315_B01_4A_J006.fna'
-fa_2        = '/Users/songweizhi/Desktop/SMP/01_fna_files_duplicated/JL315_B01_4A_J016.fna'
-fa_combined = '/Users/songweizhi/Desktop/SMP/01_fna_files_duplicated/JL315_B01_4A.fna'
-prefix      =                                                       'JL315_B01_4A'
-
-
-
-fa_combined_handle = open(fa_combined, 'w')
-seq_index = 1
-for seq in SeqIO.parse(fa_1, 'fasta'):
-    fa_combined_handle.write('>%s_%s\n' % (prefix, seq_index))
-    fa_combined_handle.write('%s\n' % seq.seq)
-    seq_index += 1
-for seq in SeqIO.parse(fa_2, 'fasta'):
-    fa_combined_handle.write('>%s_%s\n'% (prefix, seq_index))
-    fa_combined_handle.write('%s\n'% seq.seq)
-    seq_index += 1
-fa_combined_handle.close()
