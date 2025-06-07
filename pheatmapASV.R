@@ -36,11 +36,12 @@ otu_annotation_df = read.csv(file = row_annotation_txt, sep = '\t', header = TRU
 # plot and save
 pdf(output_plot, width =plot_width,  height =plot_height)
 my_heatmap <- pheatmap(otu_df,
-                       na_col = '#000000',
-                       cluster_rows=FALSE, # cutree_rows = 2,
-                       cluster_cols=FALSE, # cutree_cols = 10,
+                       na_col = '#000000',  # set the color of NA cells to black
+                       cluster_rows=FALSE,  # cutree_rows = 2,
+                       cluster_cols=FALSE,  # cutree_cols = 10,
                        # gaps_row = '',
-                       gaps_col = number_vector,
+                       # angle_col = '315',   # direction of column label
+                       gaps_col = number_vector,    # put gap between columns
                        #annotation_row = otu_annotation_df,
                        #annotation_col = col_annotation_df
                        )

@@ -4,6 +4,7 @@ import random
 import os.path
 import pandas as pd
 import seaborn as sns
+from xgboost.training import groups_to_rows
 
 
 def transpose_csv(file_in, file_out, sep_symbol, column_name_pos, row_name_pos):
@@ -202,7 +203,7 @@ def get_color_list(color_num):
     return color_list_to_return_sorted
 
 
-def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix):
+def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix, group_color_txt):
 
     # define file name
     otu_table_subset                                    = '%s/%s_otu_table_subset1.txt'                             % (op_dir, op_prefix)
@@ -366,40 +367,44 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
             sample_grp_set.add(sample_grp)
         line_index += 1
 
-    # define color and shape
-    color_num = math.ceil(len(set(sample_grp_set))/3)
-    color_list = get_color_list(color_num)*999
-    shape_list = ['15', '16', '17']*999
+    ################################################### define color ###################################################
 
-    group_list_test = []
-    grp_to_color_dict = dict()
+    # read in color
+    groups_to_color_dict = dict()
+    if os.path.isfile(group_color_txt) is True:
+        for each_line in open(group_color_txt):
+            each_split = each_line.strip().split('\t')
+            groups_to_color_dict[each_split[0]] = each_split[1]
+    group_without_color = set()
+    for sample_grp in sample_grp_set:
+        if sample_grp not in groups_to_color_dict:
+            group_without_color.add(sample_grp)
+
+    color_list = get_color_list(len(group_without_color))
+    color_list_random = random.sample(color_list, len(color_list))
+    index = 0
+    for grp in group_without_color:
+        groups_to_color_dict[grp] = color_list_random[index]
+        index += 1
+
+    ################################################### define shape ###################################################
+
+    shape_list = ['15', '16', '17']*999
     grp_to_shape_dict = dict()
     grp_index = 0
     for grp in sorted(list(sample_grp_set)):
         if grp in ['Sediment', 'sediment']:
-            grp_color = 'black'
             grp_shape = '3'
-            group_list_test.append('sediment')
-            grp_to_color_dict['sediment'] = grp_color
             grp_to_shape_dict['sediment'] = grp_shape
         elif grp in ['Water', 'water']:
-            grp_color = 'black'
             grp_shape = '8'
-            group_list_test.append('water')
-            grp_to_color_dict['water'] = grp_color
             grp_to_shape_dict['water'] = grp_shape
         else:
-            grp_color = color_list[grp_index]
             grp_shape = shape_list[grp_index]
-            group_list_test.append(grp)
             grp_index += 1
-        grp_to_color_dict[grp] = grp_color
         grp_to_shape_dict[grp] = grp_shape
 
-    shape_list = [grp_to_shape_dict[i] for i in sorted(group_list_test)]
-    color_list = [grp_to_color_dict[i] for i in sorted(group_list_test)]
-    color_str_for_r = 'c("%s")' % '", "'.join(color_list)
-    shape_str_for_r = 'c(%s)' % ', '.join(shape_list)
+    ####################################################################################################################
 
     #add group info to transposed otu table
     otu_table_subset_t_meta_handle = open(otu_table_subset_t_meta, 'w')
@@ -410,7 +415,7 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
             otu_table_subset_t_meta_handle.write('Sample\tGroup\tColor\tShape' + each_line)
         else:
             sample_grp = sample_group_dict[line_split[0]]
-            sample_color = grp_to_color_dict[sample_grp]
+            sample_color = groups_to_color_dict[sample_grp]
             sample_shape = grp_to_shape_dict[sample_grp]
             line_split.insert(1, sample_shape)
             line_split.insert(1, sample_color)
@@ -462,8 +467,8 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
 
     # run R script
     nmds_cmd = 'Rscript %s -i %s -o %s' % (nmds_R, otu_table_subset_t_meta, output_plot)
-    print(nmds_cmd)
-    os.system(nmds_cmd)
+    # print(nmds_cmd)
+    # os.system(nmds_cmd)
 
     nmds_cmd = 'Rscript %s -i %s -o %s' % (nmds_R, otu_table_subset_t_meta_genus_level, output_plot_genus_level)
     print(nmds_cmd)
@@ -480,15 +485,17 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
 
 ######################################################### Coral ########################################################
 
-# # unclassified OTUs will be ignored from this analysis
+# unclassified OTUs will be ignored from this analysis
+
 # otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000_min_pct_0.1.txt'
-# sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250511.txt'
+# sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
 # otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.GTDB.2_updated_by_blast_vs_nt.txt'
 # interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/Coral_samples_with_barcoding_30_with_Water_Sediment_69.txt'
 # minimum_seq_num         = 10000
 # interested_source       = None
 # sample_to_exclude_txt   = None
 # op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
+# group_color_txt         = '/Users/songweizhi/Desktop/coral_color.txt'
 #
 # # group by coral family
 # host_taxon_rank         = 'f'
@@ -509,19 +516,20 @@ minimum_seq_num         = 10000
 interested_source       = None
 sample_to_exclude_txt   = None
 op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
+group_color_txt         = '/Users/songweizhi/Desktop/coral_color.txt'
 
 # group by Sponge order
 host_taxon_rank         = 'o'
-op_prefix               = 'Sponge_Water_Sediment_113_by_sponge_order'
+op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_order'
 
 # group by Sponge family
 host_taxon_rank         = 'f'
-op_prefix               = 'Sponge_Water_Sediment_113_by_sponge_family'
+op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_family'
 
 # group by Sponge genus
 host_taxon_rank         = 'g'
-op_prefix               = 'Sponge_Water_Sediment_113_by_sponge_genus'
+op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_genus'
 
 ########################################################################################################################
 
-nmds(otu_table_txt, otu_classification_txt, minimum_seq_num, sample_metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix)
+nmds(otu_table_txt, otu_classification_txt, minimum_seq_num, sample_metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix, group_color_txt)
