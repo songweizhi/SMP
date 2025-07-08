@@ -512,6 +512,7 @@ otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_
 sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
 otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_356/s08_AllSamples_unoise_nc.BLCA.combined.updated.txt'
 interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/Sponge_samples_20250524.txt'
+# interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS/g__Hexactinellida_novg.txt'
 minimum_seq_num         = 10000
 interested_source       = None
 sample_to_exclude_txt   = None
