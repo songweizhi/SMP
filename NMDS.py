@@ -4,7 +4,6 @@ import random
 import os.path
 import pandas as pd
 import seaborn as sns
-from xgboost.training import groups_to_rows
 
 
 def transpose_csv(file_in, file_out, sep_symbol, column_name_pos, row_name_pos):
@@ -487,49 +486,74 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
 
 # unclassified OTUs will be ignored from this analysis
 
-# otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000_min_pct_0.1.txt'
-# sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
-# otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.GTDB.2_updated_by_blast_vs_nt.txt'
-# interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/Coral_samples_with_barcoding_30_with_Water_Sediment_69.txt'
-# minimum_seq_num         = 10000
-# interested_source       = None
-# sample_to_exclude_txt   = None
-# op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
-# group_color_txt         = '/Users/songweizhi/Desktop/coral_color.txt'
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s07_AllSamples_unoise_otu_table_noEU_min20000_min_pct_0.1.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528_changed_Plexauridae_to_Paramuriceidae.txt'
+otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch_BLCA_GTDB/s08_AllSamples_unoise_nc.blca.GTDB.2_updated_by_blast_vs_nt.txt'
+interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/Coral_samples_with_barcoding_30_with_Water_Sediment_69.txt'
+minimum_seq_num         = 10000
+interested_source       = None
+sample_to_exclude_txt   = None
+op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
+group_color_txt         = '/Users/songweizhi/Desktop/coral_color.txt'
+group_color_txt         = '/Users/songweizhi/Desktop/SMP/00_metadata/coral_color.txt'
+
+# group by coral family
+host_taxon_rank         = 'f'
+op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_family_level'
 #
-# # group by coral family
-# host_taxon_rank         = 'f'
-# op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_family_level'
-#
+# # group by coral genus
+# host_taxon_rank         = 'g'
+# op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_genus_level'
+
+###################################################### Coral (GRF) #####################################################
+
+# something wrong with JL312_B06_3, need to ignore it from this analysis
+# unclassified OTUs will be ignored from this analysis
+
+otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_356/s07_AllSamples_unoise_otu_table_noEU_min10000_min0.1pct.txt'
+sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250905.txt'
+otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_356/s08_AllSamples_unoise_nc.BLCA.combined.updated.txt'
+interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/Coral_samples_GRF_88_no_JL312_B06_3.txt'
+minimum_seq_num         = 10000
+interested_source       = None
+sample_to_exclude_txt   = None
+op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS_Coral_GRF'
+group_color_txt         = '/Users/songweizhi/Desktop/SMP/00_metadata/coral_color.txt'
+
+# group by coral family
+host_taxon_rank         = 'f'
+op_prefix               = 'Coral_GRF_by_coral_%s' % host_taxon_rank
+
 # # group by coral genus
 # host_taxon_rank         = 'g'
 # op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_genus_level'
 
 ######################################################## Sponge ########################################################
 
-# unclassified OTUs will be ignored from this analysis
-otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_356/s07_AllSamples_unoise_otu_table_noEU_min10000_min0.1pct.txt'
-sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
-otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_356/s08_AllSamples_unoise_nc.BLCA.combined.updated.txt'
-interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/Sponge_samples_20250524.txt'
-# interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS/g__Hexactinellida_novg.txt'
-minimum_seq_num         = 10000
-interested_source       = None
-sample_to_exclude_txt   = None
-op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
-group_color_txt         = '/Users/songweizhi/Desktop/coral_color.txt'
-
-# group by Sponge order
-host_taxon_rank         = 'o'
-op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_order'
-
-# group by Sponge family
-host_taxon_rank         = 'f'
-op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_family'
-
-# group by Sponge genus
-host_taxon_rank         = 'g'
-op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_genus'
+# # unclassified OTUs will be ignored from this analysis
+# otu_table_txt           = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_356/s07_AllSamples_unoise_otu_table_noEU_min10000_min0.1pct.txt'
+# sample_metadata_txt     = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
+# otu_classification_txt  = '/Users/songweizhi/Desktop/SMP/02_Usearch16S_20250526_356/s08_AllSamples_unoise_nc.BLCA.combined.updated.txt'
+# interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/00_metadata/Sponge_samples_20250524.txt'
+# # interested_sample_txt   = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS/g__Hexactinellida_novg.txt'
+# minimum_seq_num         = 10000
+# interested_source       = None
+# sample_to_exclude_txt   = None
+# op_dir                  = '/Users/songweizhi/Desktop/SMP/Analysis_3_NMDS'
+# group_color_txt         = '/Users/songweizhi/Desktop/coral_color.txt'
+#
+# # group by Sponge order
+# host_taxon_rank         = 'o'
+# op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_order'
+#
+# # group by Sponge family
+# host_taxon_rank         = 'f'
+# op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_family'
+#
+# # group by Sponge genus
+# host_taxon_rank         = 'g'
+# op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_genus'
 
 ########################################################################################################################
 
