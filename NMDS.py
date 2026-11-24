@@ -202,7 +202,7 @@ def get_color_list(color_num):
     return color_list_to_return_sorted
 
 
-def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix, group_color_txt):
+def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix, sample_grp_txt, group_color_txt):
 
     # define file name
     otu_table_subset                                    = '%s/%s_otu_table_subset1.txt'                             % (op_dir, op_prefix)
@@ -298,6 +298,13 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
                                 needed_tax = each_rank
                         sample_group_dict[sample_id] = needed_tax
 
+    # read in sample group info
+    if sample_grp_txt is not None:
+        sample_group_dict = dict()
+        for each_line in open(sample_grp_txt):
+            each_line_split = each_line.strip().split('\t')
+            sample_group_dict[each_line_split[0]] = each_line_split[1]
+
     if len(uniq_to_otu_table) > 0:
         print('Samples uniq to %s:' % otu_table_txt)
         print(','.join(sorted(list(uniq_to_otu_table))))
@@ -322,6 +329,8 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
         print()
 
     # subset OTU table by sample
+    print('sample_with_grp_info')
+    print(sample_with_grp_info)
     if len(sample_with_grp_info) < len(otu_table_sample_list):
         subset_df(otu_table_txt, otu_table_subset, sample_with_grp_info)
 
@@ -343,16 +352,20 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
             if otu_genus != 'g__':
                 otu_genus_dict[otu_id] = otu_genus
 
+    print('\nsubset df')
     subset_df1(otu_table_subset, otu_table_subset2_only_classified, unclassified_otu_set, None, True)
 
+    print('\nrm_low_depth_sample')
     # rm_low_depth_sample
     rm_low_sum_cols(otu_table_subset2_only_classified, min_seq_num, otu_table_subset3_only_classified_abd_cutoff)
 
     # take percentage
+    print('\ntake percentage')
     df_take_percentage_by_col(otu_table_subset3_only_classified_abd_cutoff, otu_table_subset3_only_classified_abd_cutoff_pct)
     table_to_use = otu_table_subset3_only_classified_abd_cutoff_pct
 
     # transpose otu table
+    print('\ntranspose otu table')
     transpose_csv(table_to_use, otu_table_subset_t, '\t', 0, 0)
     rm_low_sum_cols(otu_table_subset_t, 1, otu_table_subset_t_no_0_otu)
 
@@ -465,21 +478,11 @@ def nmds(otu_table_txt, otu_classification_txt, min_seq_num, metadata_txt, host_
     otu_table_subset_t_meta_genus_level_handle.close()
 
     # run R script
-    nmds_cmd = 'Rscript %s -i %s -o %s' % (nmds_R, otu_table_subset_t_meta, output_plot)
-    # print(nmds_cmd)
-    # os.system(nmds_cmd)
-
     nmds_cmd = 'Rscript %s -i %s -o %s' % (nmds_R, otu_table_subset_t_meta_genus_level, output_plot_genus_level)
     print(nmds_cmd)
     os.system(nmds_cmd)
 
     print('Done')
-
-    print(pd.read_csv(otu_table_subset, sep='\t', header=0, index_col=0).shape)
-    print(pd.read_csv(otu_table_subset2_only_classified, sep='\t', header=0, index_col=0).shape)
-    print(pd.read_csv(otu_table_subset3_only_classified_abd_cutoff, sep='\t', header=0, index_col=0).shape)
-    print(pd.read_csv(otu_table_subset_t, sep='\t', header=0, index_col=0).shape)
-    print(pd.read_csv(otu_table_subset_t_no_0_otu, sep='\t', header=0, index_col=0).shape)
 
 
 ######################################################### Coral ########################################################
@@ -555,6 +558,47 @@ op_prefix               = 'Coral_GRF_by_coral_%s' % host_taxon_rank
 # host_taxon_rank         = 'g'
 # op_prefix               = 'Sponge_Water_Sediment_115_by_sponge_genus'
 
+################################################ Hong Kong Sponge (GRF) ################################################
+
+# something wrong with JL312_B06_3, need to ignore it from this analysis
+# unclassified OTUs will be ignored from this analysis
+
+sample_metadata_txt     = '/Users/songweizhi/Desktop/GRF2026_data/metadata_20260913.txt'
+otu_table_txt           = '/Users/songweizhi/Desktop/GRF2026_data/OTU_table.txt'
+otu_classification_txt  = '/Users/songweizhi/Desktop/GRF2026_data/OTU_BLCA_GTDB_r232.txt'
+interested_sample_txt   = '/Users/songweizhi/Desktop/GRF2026_data/interested_sample.txt'
+minimum_seq_num         = 1000
+interested_source       = None
+sample_to_exclude_txt   = None
+op_dir                  = '/Users/songweizhi/Desktop/GRF2026_data/nmds'
+group_color_txt         = '/Users/songweizhi/Desktop/SMP/00_metadata/coral_color.txt'
+
+# Haliclona HK vs Panama
+interested_sample_txt   = '/Users/songweizhi/Desktop/GRF2026_data/interested_sample_Haliclona_HK_vs_Panama.txt'
+otu_table_txt           = '/Users/songweizhi/Desktop/GRF2026_data/OTU_table_Haliclona_HK_vs_Panama.txt'
+op_dir                  = '/Users/songweizhi/Desktop/GRF2026_data/NMDS_Haliclona_HK_vs_Panama'
+
+# All HK vs the rests
+interested_sample_txt   = '/Users/songweizhi/Desktop/GRF2026_data/interested_sample_All_HK_vs_Others.txt'
+otu_table_txt           = '/Users/songweizhi/Desktop/GRF2026_data/OTU_table_All_HK_vs_Others.txt'
+op_dir                  = '/Users/songweizhi/Desktop/GRF2026_data/NMDS_ALl_HK_vs_Others'
+
+# Asia
+interested_sample_txt   = '/Users/songweizhi/Desktop/GRF2026_data/interested_sample_Asia2.txt'
+otu_table_txt           = '/Users/songweizhi/Desktop/GRF2026_data/OTU_table_Asia2.txt'
+op_dir                  = '/Users/songweizhi/Desktop/GRF2026_data/NMDS_Asia2'
+group_color_txt         = '/Users/songweizhi/Desktop/GRF2026_data/color_code_region.txt'
+sample_grp_txt          = None
+sample_grp_txt          = '/Users/songweizhi/Desktop/GRF2026_data/interested_sample_Asia.txt'
+
+# group by coral family
+host_taxon_rank         = 'f'
+op_prefix               = 'Coral_GRF_by_coral_%s' % host_taxon_rank
+
+# # group by coral genus
+# host_taxon_rank         = 'g'
+# op_prefix               = 'coral_sample_with_barcoding_30_with_Water_Sediment_69_genus_level'
+
 ########################################################################################################################
 
-nmds(otu_table_txt, otu_classification_txt, minimum_seq_num, sample_metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix, group_color_txt)
+nmds(otu_table_txt, otu_classification_txt, minimum_seq_num, sample_metadata_txt, host_taxon_rank, interested_source, interested_sample_txt, sample_to_exclude_txt, op_dir, op_prefix, sample_grp_txt, group_color_txt)

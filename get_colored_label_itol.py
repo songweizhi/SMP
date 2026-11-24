@@ -26,14 +26,14 @@ itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_tree_Coral/iTOL_co
 
 ########################################################################################################################
 
-metadata_txt            = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20250528.txt'
-ref_tax_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_with_amplicon-3D4ZBUK7016-Alignment_formatted_ref_accession/accession_organism.txt'
-voucher_txt             = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_with_amplicon-3D4ZBUK7016-Alignment_formatted_ref_accession/accession_voucher.txt'
+metadata_txt            = '/Users/songweizhi/Desktop/SMP/00_metadata/metadata_20251021.txt'
+ref_tax_txt             = '/Users/songweizhi/Desktop/SMP/Host_Tree_Sponge/combined_COI_sponge_with_amplicon-3D4ZBUK7016-Alignment_formatted_ref_accession/accession_organism.txt'
+voucher_txt             = '/Users/songweizhi/Desktop/SMP/Host_Tree_Sponge/combined_COI_sponge_with_amplicon-3D4ZBUK7016-Alignment_formatted_ref_accession/accession_voucher.txt'
 tax_ranks               = 'c,sc,o,f,g,s'
 
 marker_id               = 'COI'
-aln_file                = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/combined_COI_sponge_plus_ref_gblocks.aln'
-itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_tree_Sponge/iTOL_ColoredLabel_Sponge_%s_taxa.txt'    % marker_id
+aln_file                = '/Users/songweizhi/Desktop/SMP/Host_Tree_Sponge/combined_COI_sponge_plus_ref.aln'
+itol_colored_label_txt  = '/Users/songweizhi/Desktop/SMP/Host_Tree_Sponge/iTOL_ColoredLabel_Sponge_%s_taxa.txt'    % marker_id
 
 ########################################################################################################################
 

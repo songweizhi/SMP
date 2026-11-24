@@ -88,120 +88,154 @@ genome_skimming_28s_fa      = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and
 genome_skimming_coi_fa      = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/Genome_skimming_COI_batch3_10.fasta'
 extract_barcoding_gene_seq  = False
 
-# unclassified 7
-sample_id_txt               = '/Users/songweizhi/Desktop/JL7.txt'
-assembly_dir                = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds'
-blast_op_dir                = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_unclassified_7_blast_op_dir'
-genome_skimming_28s_fa      = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/Genome_skimming_28S_unclassified_7.fasta'
-genome_skimming_coi_fa      = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/Genome_skimming_COI_unclassified_7.fasta'
+# batch4
+sample_id_txt               = '/Users/songweizhi/Desktop/batch4.txt'
+assembly_dir                = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_batch4'
+blast_op_dir                = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_batch4_blast_op'
+genome_skimming_28s_fa      = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/Genome_skimming_28S_batch4.fasta'
+genome_skimming_coi_fa      = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/Genome_skimming_COI_batch4.fasta'
+extract_barcoding_gene_seq  = False
+
+# batch5
+sample_id_txt               = '/Users/songweizhi/Desktop/batch5.txt'
+assembly_dir                = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_batch4'
+blast_op_dir                = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_batch4_blast_op'
+genome_skimming_28s_fa      = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/Genome_skimming_28S_batch4.fasta'
+genome_skimming_coi_fa      = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/Genome_skimming_COI_batch4.fasta'
+extract_barcoding_gene_seq  = False
+
+# HKSD
+sample_id_txt               = '/Users/songweizhi/Desktop/HKSD/metagenome/batch_hksd.txt'
+assembly_dir                = '/Users/songweizhi/Desktop/HKSD/metagenome/spades_k55-127_scaffolds'
+blast_op_dir                = '/Users/songweizhi/Desktop/HKSD/metagenome/spades_k55-127_scaffolds_blast_op'
+genome_skimming_28s_fa      = '/Users/songweizhi/Desktop/HKSD/metagenome/28S_HKSD.fasta'
+genome_skimming_coi_fa      = '/Users/songweizhi/Desktop/HKSD/metagenome/COI_HKSD.fasta'
+extract_barcoding_gene_seq  = False
+ref_seq_file_28s            = '/Users/songweizhi/Desktop/HKSD/metagenome/combined_28S_sponge_plus_ref.fa'
+ref_seq_file_coi            = '/Users/songweizhi/Desktop/HKSD/metagenome/combined_COI_sponge_with_amplicon_plus_ref.fa'
+
+
+# get mito 16S sequence
+sample_id_txt               = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_sponge21.txt'
+assembly_dir                = '/Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_sponge21'
+blast_op_dir                = '/Users/songweizhi/Desktop/SMP/Ids_Shan_vs_Tom_data_vs_metadata_20260913_updated/blast_op_16S'
+genome_skimming_16s_fa      = '/Users/songweizhi/Desktop/SMP/Ids_Shan_vs_Tom_data_vs_metadata_20260913_updated/metagenome21_16S.fasta'
+genome_skimming_28s_fa      = '/Users/songweizhi/Desktop/SMP/Ids_Shan_vs_Tom_data_vs_metadata_20260913_updated/metagenome21_28S.fasta'
+genome_skimming_coi_fa      = '/Users/songweizhi/Desktop/SMP/Ids_Shan_vs_Tom_data_vs_metadata_20260913_updated/metagenome21_COI.fasta'
 extract_barcoding_gene_seq  = True
+ref_seq_file_16s            = '/Users/songweizhi/Desktop/SMP/Ids_Shan_vs_Tom_data_vs_metadata_20260913_updated/16S.fasta'
+ref_seq_file_28s            = ''
+ref_seq_file_coi            = ''
+
 
 ########################################################################################################################
 
-if os.path.isfile(genome_skimming_28s_fa):
-    os.remove(genome_skimming_28s_fa)
-if os.path.isfile(genome_skimming_coi_fa):
-    os.remove(genome_skimming_coi_fa)
+if extract_barcoding_gene_seq is True:
+    if os.path.isfile(genome_skimming_28s_fa):
+        print('%s already exists, program exited!' % genome_skimming_28s_fa)
+        exit()
+    if os.path.isfile(genome_skimming_coi_fa):
+        print('%s already exists, program exited!' % genome_skimming_coi_fa)
+        exit()
 
 file_index = 1
 for each in open(sample_id_txt):
 
     sample_id = each.strip()
     fastqc_cmd = 'fastqc %s_1.fq.gz %s_2.fq.gz' % (sample_id, sample_id)
-    fastqc_cmd = 'BioSAK hpc3 -q cpu-share -wt 11:59:59 -t 36 -conda mybase2 -n fastqc%s -c "%s"' % (file_index, fastqc_cmd)
-    # print(fastqc_cmd)
+    fastqc_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 02:59:59 -t 1 -conda mybase2 -n fastqc%s -c "%s"' % (file_index, fastqc_cmd)
+    #print(fastqc_cmd)
 
-    trim_cmd = 'trimmomatic PE -threads 30 -phred33 %s_1.fq.gz %s_2.fq.gz %s_1_P.fq.gz %s_1_UP.fq.gz %s_2_P.fq.gz %s_2_UP.fq.gz ILLUMINACLIP:/scratch/PI/ocessongwz/DB/trimmomatic_adapters/TruSeq3-PE-2.fa:2:30:10 CROP:145 HEADCROP:5 LEADING:20 TRAILING:20 SLIDINGWINDOW:5:25 MINLEN:35' % (sample_id, sample_id, sample_id, sample_id, sample_id, sample_id)
-    trim_cmd = 'BioSAK hpc3 -q cpu -a boqianpy -wt 11:59:59 -t 36 -conda mybase2 -n trim%s -c "%s"' % (file_index, trim_cmd)
-    # print(trim_cmd)
+    trim_cmd = 'java -Xmx128g -jar /project/spongeholobiont/Software/Trimmomatic-0.40/trimmomatic-0.40.jar PE -threads 36 -phred33 %s_1.fq.gz %s_2.fq.gz %s_1_P.fq.gz %s_1_UP.fq.gz %s_2_P.fq.gz %s_2_UP.fq.gz ILLUMINACLIP:/project/spongeholobiont/DB/trimmomatic_adapters/TruSeq3-PE-2.fa:2:30:10 CROP:145 HEADCROP:5 LEADING:20 TRAILING:20 SLIDINGWINDOW:5:20 MINLEN:35' % (sample_id, sample_id, sample_id, sample_id, sample_id, sample_id)
+    trim_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 05:59:59 -t 36 -conda mybase2 -n trim%s -c "%s"' % (file_index, trim_cmd)
+    #print(trim_cmd)
 
-    fastqc_cmd = 'BioSAK hpc3 -q cpu -a boqianpy -wt 11:59:59 -t 36 -conda mybase2 -n qc_%s -c "fastqc %s_1_P.fq.gz %s_2_P.fq.gz"' % (file_index, sample_id, sample_id)
-    # print(fastqc_cmd)
+    fastqc_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 02:59:59 -t 1 -conda mybase2 -n qc_%s -c "fastqc %s_1_P.fq.gz %s_2_P.fq.gz"' % (file_index, sample_id, sample_id)
+    #print(fastqc_cmd)
 
     # combine unpaired reads
-    combine_unpaired_reads_cmd = 'gunzip %s_1_UP.fq.gz; gunzip %s_2_UP.fq.gz; cat %s_1_UP.fq %s_2_UP.fq > %s_UP.fq; gzip %s_UP.fq' % (sample_id, sample_id, sample_id, sample_id, sample_id, sample_id)
-    combine_unpaired_reads_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 11:59:59 -t 36 -conda mybase2 -n cat_up_%s -c "%s"' % (file_index, combine_unpaired_reads_cmd)
-    # print(combine_unpaired_reads_cmd)
+    combine_unpaired_reads_cmd = 'gunzip %s_1_UP.fq.gz; gunzip %s_2_UP.fq.gz; cat %s_1_UP.fq %s_2_UP.fq > %s_UP.fq; gzip %s_UP.fq'  % (sample_id, sample_id, sample_id, sample_id, sample_id, sample_id)
+    combine_unpaired_reads_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 11:59:59 -t 36 -conda mybase2 -n cat_up_%s -c "%s"'          % (file_index, combine_unpaired_reads_cmd)
+    #print(combine_unpaired_reads_cmd)
 
     # spades
-    spades_cmd = 'spades.py --meta -t 36 -k 55,77,99,127 -1 %s_1_P.fq.gz -2 %s_2_P.fq.gz -s %s_UP.fq.gz -o %s_spades_k55-127' % (sample_id, sample_id, sample_id, sample_id)
-    spades_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 71:59:59 -t 36 -conda mybase2 -n spades_%s -c "%s"' % (file_index, spades_cmd)
-    # print(spades_cmd)
+    spades_cmd = 'spades.py --only-assembler --meta -t 36 -k 55,77,99,127 -1 %s_1_P.fq.gz -2 %s_2_P.fq.gz -s %s_UP.fq.gz -o %s_spades_k55-127' % (sample_id, sample_id, sample_id, sample_id)
+    spades_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 71:59:59 -t 36 -conda mybase2 -n spades_%s -c "%s"' % (file_index, spades_cmd)
+    #print(spades_cmd)
 
     # copy and rename spades assemblies
-    copy_assemblies_cmd = 'cp %s_spades_k55-127/scaffolds.fasta spades_k55-127_scaffolds/%s.fasta' % (sample_id, sample_id)
-    # print(copy_assemblies_cmd)
+    copy_assemblies_cmd = 'cp %s_spades_k55-127/scaffolds.fasta spades_k55-127_scaffolds/%s.fasta'      % (sample_id, sample_id)
+    #print(copy_assemblies_cmd)
 
     # compress spades_wd
-    tar_cmd = 'tar -czvf %s_spades_k55-127.tar.gz %s_spades_k55-127'                            % (sample_id, sample_id)
-    tar_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 11:59:59 -t 1 -conda mybase2 -n tar%s -c "%s"'    % (file_index, tar_cmd)
-    # print(tar_cmd)
+    tar_cmd = 'tar -czvf %s_spades_k55-127.tar.gz %s_spades_k55-127'                                    % (sample_id, sample_id)
+    tar_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 11:59:59 -t 1 -conda mybase2 -n tar%s -c "%s"'      % (file_index, tar_cmd)
+    #print(tar_cmd)
 
     # compress assemblies
     gzip_cmd = 'gzip %s.fasta' % sample_id
-    gzip_cmd = 'BioSAK hpc3 -q cpu-share -wt 11:59:59 -t 36 -conda mybase2 -n gzip%s -c "%s"' % (file_index, gzip_cmd)
-    # print(gzip_cmd)
+    gzip_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 00:59:59 -t 36 -conda mybase2 -n gzip%s -c "%s"'   % (file_index, gzip_cmd)
+    #print(gzip_cmd)
 
     ############################################ extract_barcoding_gene_seq ############################################
 
     # mkblastdb
     mkblastdb_cmd = 'makeblastdb -in %s.fasta -dbtype nucl -parse_seqids' % sample_id
-    # print(mkblastdb_cmd)
-    mkblastdb_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 11:59:59 -t 36 -conda mybase2 -n mkblastdb_%s -c "%s"' % (file_index, mkblastdb_cmd)
-    # print(mkblastdb_cmd)
+    mkblastdb_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 00:59:59 -t 36 -conda mybase2 -n mkblastdb_%s -c "%s"' % (file_index, mkblastdb_cmd)
+    #print(mkblastdb_cmd)
 
     # blast barcoding gene against assemblies
-    blast_cmd_28s = 'blastn -query %s -db %s.fasta -out %s_28S.txt -evalue 1e-5 -outfmt 6 -task blastn' % (ref_seq_file_28s, sample_id, sample_id)
-    blast_cmd_coi = 'blastn -query %s -db %s.fasta -out %s_COI.txt -evalue 1e-5 -outfmt 6 -task blastn' % (ref_seq_file_coi, sample_id, sample_id)
+    blast_cmd_16s = 'blastn -query /project/spongeholobiont/SMP/metagenome21/16S.fasta -db %s.fasta -out ../%s_16S.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
+    blast_cmd_28s = 'blastn -query /project/spongeholobiont/DD_metagenomes/28S_crop.fa -db %s.fasta -out ../%s_28S.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
+    blast_cmd_28s = 'blastn -query /project/spongeholobiont/HKSD/combined_28S_sponge_plus_ref.fa -db %s.fasta -out ../%s_28S.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
+    blast_cmd_coi = 'blastn -query /project/spongeholobiont/DD_metagenomes/COI_crop.fa -db %s.fasta -out ../%s_COI.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
+    blast_cmd_coi = 'blastn -query /project/spongeholobiont/HKSD/combined_COI_sponge_with_amplicon_plus_ref.fa -db %s.fasta -out ../%s_COI.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
+
     blast_cmd_both = '%s; %s' % (blast_cmd_28s, blast_cmd_coi)
-    blast_cmd_both = 'BioSAK hpc3 -q cpu-share -wt 11:59:59 -t 36 -conda mybase2 -n blast_%s -c "%s"' % (file_index, blast_cmd_both)
+    blast_cmd_both = 'BioSAK hpc4 -q amd -a marmolecol -wt 00:29:59 -t 36 -conda mybase2 -n blast_%s -c "%s"' % (file_index, blast_cmd_both)
     # print(blast_cmd_both)
 
-    # blast barcoding gene against assemblies
-    blast_cmd_28s = 'blastn -query /Users/songweizhi/Desktop/SMP/Host_Barcoding_Sanger/28S_crop.fa -db /Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_batch3_10/%s.fasta -out /Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_batch3_10_blast_op/%s_28S.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
-    blast_cmd_coi = 'blastn -query /Users/songweizhi/Desktop/SMP/Host_Barcoding_Sanger/COI_crop.fa -db /Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_batch3_10/%s.fasta -out /Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome/spades_k55-127_scaffolds_batch3_10_blast_op/%s_COI.txt -evalue 1e-5 -outfmt 6 -task blastn' % (sample_id, sample_id)
-    # os.system(blast_cmd_28s)
-    # os.system(blast_cmd_coi)
-
+    # extract sequences
     assembly_fa  = '%s/%s.fasta'   % (assembly_dir, sample_id)
+    blast_op_16s = '%s/%s_16S.txt' % (blast_op_dir, sample_id)
     blast_op_28s = '%s/%s_28S.txt' % (blast_op_dir, sample_id)
     blast_op_coi = '%s/%s_COI.txt' % (blast_op_dir, sample_id)
     if extract_barcoding_gene_seq is True:
+        if os.path.isfile(blast_op_16s):
+            get_hit_seq_seq(sample_id, '16S', assembly_fa, ref_seq_file_16s, blast_op_16s, genome_skimming_16s_fa)
         if os.path.isfile(blast_op_28s):
             get_hit_seq_seq(sample_id, '28S', assembly_fa, ref_seq_file_28s, blast_op_28s, genome_skimming_28s_fa)
-            print(os.path.isfile(genome_skimming_28s_fa))
         if os.path.isfile(blast_op_coi):
             get_hit_seq_seq(sample_id, 'COI', assembly_fa, ref_seq_file_coi, blast_op_coi, genome_skimming_coi_fa)
-            print(os.path.isfile(genome_skimming_coi_fa))
+
+    # then run online blast for the extracted sequences and download the results (select the "Text" format)
+
+    # then parse the downloaded blast results with "BioSAK blast"
 
     ##################################################### binning ######################################################
 
-    # decompress
-    gunzip_cmd = 'gunzip %s_1_P.fq.gz; gunzip %s_2_P.fq.gz' % (sample_id, sample_id)
-    gunzip_cmd = 'BioSAK hpc3 -q cpu-share -wt 11:59:59 -t 36 -conda mybase2 -n gunzip%s -c "%s"' % (file_index, gunzip_cmd)
-    # print(gunzip_cmd)
+    # decompress R1
+    gunzip_1_cmd = 'gunzip %s_1_P.fq.gz' % (sample_id)
+    gunzip_1_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 02:59:59 -t 1 -conda mybase2 -n gunzip%s_1 -c "%s"' % (file_index, gunzip_1_cmd)
+    #print(gunzip_1_cmd)
 
-    # decompress
-    gunzip_1_cmd = 'gunzip %s_1.fq.gz' % (sample_id)
-    gunzip_1_cmd = 'BioSAK hpc3 -q cpu-share -wt 11:59:59 -t 1 -conda mybase2 -n gunzip%s_1 -c "%s"' % (file_index, gunzip_1_cmd)
-    # print(gunzip_1_cmd)
-
-    gunzip_2_cmd = 'gunzip %s_2.fq.gz' % (sample_id)
-    gunzip_2_cmd = 'BioSAK hpc3 -q cpu-share -wt 11:59:59 -t 1 -conda mybase2 -n gunzip%s_2 -c "%s"' % (file_index, gunzip_2_cmd)
-    # print(gunzip_2_cmd)
+    # decompress R1
+    gunzip_2_cmd = 'gunzip %s_2_P.fq.gz' % (sample_id)
+    gunzip_2_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 02:59:59 -t 1 -conda mybase2 -n gunzip%s_2 -c "%s"' % (file_index, gunzip_2_cmd)
+    #print(gunzip_2_cmd)
 
     # rename fq files for metaWRAP
     rename_cmd = 'mv %s_1_P.fq %s_1.fastq; mv %s_2_P.fq %s_2.fastq' % (sample_id, sample_id, sample_id, sample_id)
-    # print(rename_cmd)
+    #print(rename_cmd)
 
     # binning
-    metawrap_cmd = 'metaWRAP binning -t 36 --metabat2 --maxbin2 --concoct -a spades_k55-127_scaffolds/%s.fasta -o %s_metaWRAP_wd reads_after_qc/%s_1.fastq reads_after_qc/%s_2.fastq' % (sample_id, sample_id, sample_id, sample_id)
-    metawrap_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 71:59:59 -t 36 -conda metawrap-env -n metawrap%s -c "%s"' % (file_index, metawrap_cmd)
-    # print(metawrap_cmd)
+    metawrap_cmd = 'metawrap binning -t 36 --metabat2 --maxbin2 --concoct -a spades_k55-127_scaffolds/%s.fasta -o %s_metaWRAP_wd reads_after_qc/%s_1.fastq reads_after_qc/%s_2.fastq' % (sample_id, sample_id, sample_id, sample_id)
+    metawrap_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 71:59:59 -t 36 -conda metawrap-env -n metawrap%s -c "%s"' % (file_index, metawrap_cmd)
+    #print(metawrap_cmd)
 
     # refine
     refine_cmd = 'metawrap bin_refinement -o %s_refine_wd -t 36 -c 50 -x 5 -A %s_metaWRAP_wd/metabat2_bins -B %s_metaWRAP_wd/maxbin2_bins -C %s_metaWRAP_wd/concoct_bins' % (sample_id, sample_id, sample_id, sample_id)
-    refine_cmd = 'BioSAK hpc3 -q cpu -a oces -wt 23:59:59 -t 36 -conda metawrap-env -n refine%s -c "%s"' % (file_index, refine_cmd)
+    refine_cmd = 'BioSAK hpc4 -q amd -a marmolecol -wt 23:59:59 -t 36 -conda metawrap-env -n refine%s -c "%s"' % (file_index, refine_cmd)
     # print(refine_cmd)
 
     ####################################################################################################################
@@ -215,5 +249,13 @@ for each in open(sample_id_txt):
 cd /Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome
 BioSAK blast -i Genome_skimming_28S_unclassified_7_FCMHVNK9014-Alignment.txt -o Genome_skimming_28S_unclassified_7_FCMHVNK9014-Alignment_formatted.txt -n 20 -iden 80 -tax /Users/songweizhi/DB/taxdump_20250321/ncbi_taxonomy.txt
 BioSAK blast -i Genome_skimming_COI_unclassified_7_FCMJKGMR015-Alignment.txt -o Genome_skimming_COI_unclassified_7_FCMJKGMR015-Alignment_formatted.txt -n 20 -iden 80 -tax /Users/songweizhi/DB/taxdump_20250321/ncbi_taxonomy.txt
+
+cd /Users/songweizhi/Desktop/SMP/Genome_Skimming_and_Metagenome
+BioSAK blast -i Genome_skimming_28S_batch4_MW498N6V016-Alignment.txt -o Genome_skimming_28S_batch4_MW498N6V016-Alignment_formatted.txt -n 20 -iden 80 -tax /Users/songweizhi/DB/taxdump_20250321/ncbi_taxonomy.txt
+BioSAK blast -i Genome_skimming_COI_batch4_MW49JA26016-Alignment.txt -o Genome_skimming_COI_batch4_MW49JA26016-Alignment_formatted.txt -n 20 -iden 80 -tax /Users/songweizhi/DB/taxdump_20250321/ncbi_taxonomy.txt
+
+cd /Users/songweizhi/Desktop/888
+BioSAK blast -i MWFTM9N2014-Alignment.txt -o MWFTM9N2014-Alignment_formatted.txt -n 5 -iden 80 -tax /Users/songweizhi/DB/taxdump_20250321/ncbi_taxonomy.txt
+BioSAK blast -i MWFTZADS014-Alignment.txt -o MWFTZADS014-Alignment_formatted.txt -n 5 -iden 80 -tax /Users/songweizhi/DB/taxdump_20250321/ncbi_taxonomy.txt
 
 '''
